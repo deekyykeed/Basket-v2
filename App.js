@@ -14,7 +14,7 @@ export default function App() {
           backgroundColor: theme.card,
           shadowColor: colorScheme === 'dark' ? '#000' : '#000',
         }]}>
-          <Text style={{ color: theme.text }}>Welcome to Basket v2!</Text>
+          <Text style={[styles.cardText, { color: theme.text }]}>Welcome to Basket v2!</Text>
         </View>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </SafeAreaView>
@@ -48,11 +48,10 @@ const styles = StyleSheet.create({
     zIndex: 1,
     padding: 14,
     // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 22, height: 22 },
-    shadowOpacity: 1,
-    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     // Shadow for Android
-    elevation: 22,
+    elevation: 5,
   },
 });
