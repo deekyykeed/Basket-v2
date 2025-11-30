@@ -10,7 +10,12 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <Text style={{ color: theme.text }}>Welcome to Basket v2!</Text>
+        <View style={[styles.card, {
+          backgroundColor: theme.card,
+          shadowColor: colorScheme === 'dark' ? '#000' : '#000',
+        }]}>
+          <Text style={{ color: theme.text }}>Welcome to Basket v2!</Text>
+        </View>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </SafeAreaView>
     </SafeAreaProvider>
@@ -30,5 +35,24 @@ const styles = StyleSheet.create({
     flexWrap: 'nowrap',
     gap: 0,
     borderRadius: 0,
+  },
+  card: {
+    position: 'absolute',
+    bottom: 32,
+    left: '3%',
+    right: '3%',
+    width: '94%',
+    height: 91,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    overflow: 'hidden',
+    zIndex: 1,
+    // Shadow for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    // Shadow for Android
+    elevation: 5,
   },
 });
