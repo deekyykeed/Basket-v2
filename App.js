@@ -1,20 +1,30 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { themes } from './theme';
 
 export default function App() {
+  const colorScheme = useColorScheme();
+  const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={{ color: theme.text }}>Welcome to Basket v2!</Text>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
   },
 });
