@@ -14,9 +14,11 @@ export default function App() {
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
   const [fontsLoaded] = useFonts({
-    // Add your custom fonts here
-    // Example: 'CustomFont-Regular': require('./assets/fonts/CustomFont-Regular.ttf'),
-    // Example: 'CustomFont-Bold': require('./assets/fonts/CustomFont-Bold.ttf'),
+    'FamiljenGrotesk-Regular': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Regular.otf'),
+    'FamiljenGrotesk-Medium': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Medium.otf'),
+    'FamiljenGrotesk-SemiBold': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-SemiBold.otf'),
+    'FamiljenGrotesk-Bold': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Bold.otf'),
+    'FamiljenGrotesk-Italic': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Italic.otf'),
   });
 
   useEffect(() => {
@@ -79,6 +81,6 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 16,
-    fontWeight: '400',
+    fontFamily: 'FamiljenGrotesk-Regular',
   },
 });
