@@ -55,7 +55,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cardText: {
-    fontSize: 16,
+    fontSize: 16
+    ,
     fontWeight: '400',
   },
 });
