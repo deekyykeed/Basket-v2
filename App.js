@@ -39,8 +39,6 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     bottom: 32,
-    left: '3%',
-    right: '3%',
     width: '94%',
     height: 91,
     borderRadius: 22,
@@ -48,11 +46,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
     zIndex: 1,
+    padding: 14,
     // Shadow for iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 22, height: 22 },
+    shadowOpacity: 1,
+    shadowRadius: 22,
     // Shadow for Android
-    elevation: 5,
+    elevation: 22,
   },
 });
