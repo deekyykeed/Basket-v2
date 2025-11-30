@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     height: 91,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: '#ffffff',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
     zIndex: 1,
     // Shadow for iOS
