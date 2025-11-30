@@ -72,6 +72,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
     zIndex: 1,
+    padding: 16,
+    justifyContent: 'center',
     // Shadow for iOS
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
