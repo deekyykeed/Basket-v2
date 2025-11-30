@@ -14,11 +14,11 @@ export default function App() {
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
   const [fontsLoaded] = useFonts({
-    'FamiljenGrotesk-Regular': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Regular.otf'),
-    'FamiljenGrotesk-Medium': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Medium.otf'),
-    'FamiljenGrotesk-SemiBold': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-SemiBold.otf'),
-    'FamiljenGrotesk-Bold': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Bold.otf'),
-    'FamiljenGrotesk-Italic': require('./assets/fonts/Familjen Grotesk/FamiljenGrotesk_Complete/Fonts/OTF/FamiljenGrotesk-Italic.otf'),
+    'FamiljenGrotesk-Regular': require('./assets/fonts/FamiljenGrotesk-Regular.otf'),
+    'FamiljenGrotesk-Medium': require('./assets/fonts/FamiljenGrotesk-Medium.otf'),
+    'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk-SemiBold.otf'),
+    'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk-Bold.otf'),
+    'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk-Italic.otf'),
   });
 
   useEffect(() => {
