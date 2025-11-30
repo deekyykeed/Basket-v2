@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { themes } from './theme';
 
 export default function App() {
@@ -7,15 +8,18 @@ export default function App() {
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={{ color: theme.text }}>Welcome to Basket v2!</Text>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-    </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <Text style={{ color: theme.text }}>Welcome to Basket v2!</Text>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-start',
