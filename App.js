@@ -1,9 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { useFonts } from 'expo-font';
+import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { themes } from './theme';
 
 // Keep the splash screen visible while fonts load
@@ -12,20 +12,26 @@ SplashScreen.preventAutoHideAsync();
 export default function App() {
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
-
-  const [fontsLoaded] = useFonts({
-    'FamiljenGrotesk-Regular': require('./assets/fonts/FamiljenGrotesk-Regular.otf'),
-    'FamiljenGrotesk-Medium': require('./assets/fonts/FamiljenGrotesk-Medium.otf'),
-    'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk-SemiBold.otf'),
-    'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk-Bold.otf'),
-    'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk-Italic.otf'),
-  });
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          'FamiljenGrotesk-Regular': require('./assets/fonts/FamiljenGrotesk-Regular.otf'),
+          'FamiljenGrotesk-Medium': require('./assets/fonts/FamiljenGrotesk-Medium.otf'),
+          'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk-SemiBold.otf'),
+          'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk-Bold.otf'),
+          'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk-Italic.otf'),
+        });
+        setFontsLoaded(true);
+        await SplashScreen.hideAsync();
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+      }
     }
-  }, [fontsLoaded]);
+    loadFonts();
+  }, []);
 
   if (!fontsLoaded) {
     return null;
@@ -33,12 +39,12 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={[styles.card, {
           backgroundColor: theme.card,
           shadowColor: '#000',
-        }]}> 
-          <Text style={[styles.cardText, { color: theme.text }]}>Welcome to Basket v2!</Text>
+        }]}>
+          <Text style={styles.cardText}>K341.45</Text>
         </View>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </SafeAreaView>
@@ -86,7 +92,11 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cardText: {
-    fontSize: 16,
+    width: '100%',
+    fontWeight: '500',
     fontFamily: 'FamiljenGrotesk-Medium',
+    color: 'rgba(0, 0, 0, 0.6)',
+    fontSize: 16,
+    lineHeight: 19.2,
   },
 });
