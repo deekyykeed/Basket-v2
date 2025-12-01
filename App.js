@@ -44,7 +44,7 @@ export default function App() {
           backgroundColor: theme.card,
           shadowColor: '#000',
         }]}>
-          <Text style={[styles.cardText, { color: theme.text }]}>Welcome to Basket v2!</Text>
+          <Text style={styles.cardText}>K341.45</Text>
         </View>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </SafeAreaView>
@@ -92,7 +92,11 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cardText: {
+    width: '100%',
+    fontWeight: '500',
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: 'rgba(0, 0, 0, 0.6)',
     fontSize: 16,
-    fontFamily: 'FamiljenGrotesk-Regular',
+    lineHeight: 19.2,
   },
 });
