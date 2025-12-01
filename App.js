@@ -30,7 +30,7 @@ export default function App() {
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={[styles.card, {
           backgroundColor: theme.card,
-          shadowColor: colorScheme === 'dark' ? '#000' : '#000',
+          shadowColor: '#000',
         }]}>
           <Text style={[styles.cardText, { color: theme.text }]}>Welcome to Basket v2!</Text>
         </View>
