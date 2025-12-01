@@ -83,6 +83,6 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 16,
-    fontFamily: 'FamiljenGrotesk-Regular',
+    fontFamily: 'FamiljenGrotesk-Medium',
   },
 });
