@@ -153,22 +153,154 @@ CREATE TRIGGER update_products_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- ================================================
+-- PART 11: INSERT DEMO PRODUCTS
+-- ================================================
+-- NOTE: After uploading images to Storage → product-images bucket,
+-- replace the image URLs below with your actual product image URLs
+-- URL format: https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/YOUR_IMAGE_NAME.jpg
+
+INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, is_available, featured)
+VALUES
+  -- Row 1
+  (
+    'Fresh Tomato',
+    15.88,
+    'x5',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/tomato.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    100,
+    true,
+    true
+  ),
+  (
+    'Green Lettuce',
+    12.50,
+    NULL,
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/lettuce.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    80,
+    true,
+    true
+  ),
+  (
+    'Banana Bunch',
+    18.99,
+    'x5',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/banana.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    120,
+    true,
+    true
+  ),
+  (
+    'Fresh Broccoli',
+    22.00,
+    NULL,
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/broccoli.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    60,
+    true,
+    true
+  ),
+
+  -- Row 2
+  (
+    'Red Grapes',
+    25.99,
+    '500g',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/grapes.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    90,
+    true,
+    true
+  ),
+  (
+    'Sweet Mango',
+    19.99,
+    'x2',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/mango.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    75,
+    true,
+    true
+  ),
+  (
+    'Watermelon',
+    45.00,
+    '1 whole',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/watermelon.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    50,
+    true,
+    true
+  ),
+  (
+    'Red Apple',
+    20.50,
+    'x6',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/apple.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    150,
+    true,
+    true
+  ),
+
+  -- Row 3
+  (
+    'Fresh Carrot',
+    14.99,
+    '1kg',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/carrot.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    110,
+    true,
+    true
+  ),
+  (
+    'Orange',
+    16.50,
+    'x4',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/orange.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    95,
+    true,
+    true
+  ),
+  (
+    'Strawberries',
+    28.99,
+    '250g',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/strawberry.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    65,
+    true,
+    true
+  ),
+  (
+    'Blueberries',
+    32.00,
+    '200g',
+    'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/blueberry.jpg',
+    (SELECT id FROM categories WHERE slug = 'grocery'),
+    45,
+    true,
+    true
+  );
+
+-- ================================================
 -- SETUP COMPLETE!
 -- ================================================
 -- Next steps:
--- 1. Verify tables: Check 'Table Editor' in Dashboard
--- 2. Verify storage bucket: Go to Storage → You should see 'product-images' bucket
--- 3. Upload product images:
---    - Go to Storage → product-images
---    - Upload your product images
---    - Copy the public URL for each image
--- 4. Insert products with image URLs:
---    Example:
+-- 1. Run this entire SQL script in Supabase SQL Editor
+-- 2. Go to Storage → You should see 'product-images' bucket
+-- 3. Upload your product images to the bucket
+-- 4. Update the image URLs in the INSERT statements above
+-- 5. Or add new products with SQL like:
 --    INSERT INTO products (name, price, image_url, category_id, stock_quantity, featured)
 --    VALUES (
---      'Fresh Tomato',
---      15.88,
---      'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/tomato.jpg',
+--      'Product Name',
+--      29.99,
+--      'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/your-image.jpg',
 --      (SELECT id FROM categories WHERE slug = 'grocery'),
 --      100,
 --      true
