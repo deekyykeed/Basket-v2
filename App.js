@@ -37,7 +37,9 @@ export default function App() {
         <View style={styles.topContainer}>
           <View style={styles.topHeader}>
             <View style={styles.actionBar}>
-              {/* Action bar content will go here */}
+              <View style={styles.searchBar}>
+                {/* Search bar content will go here */}
+              </View>
             </View>
           </View>
           <View style={styles.categories}>
@@ -109,6 +111,24 @@ const styles = StyleSheet.create({
     flexWrap: 'nowrap',
     gap: 9,
     borderRadius: 0,
+  },
+  searchBar: {
+    flex: 1,
+    width: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 10,
+    position: 'absolute',
+    borderRadius: 20,
+    borderWidth: 0,
+    borderColor: 'rgba(34, 34, 34, 0.1)',
   },
   categories: {
     width: '100%',
