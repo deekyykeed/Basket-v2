@@ -5,9 +5,55 @@
 -- Dashboard → SQL Editor → New Query → Paste this code → Run
 -- ================================================
 
--- 1. Create Categories Table
 -- ================================================
-CREATE TABLE IF NOT EXISTS categories (
+-- PART 1: DROP EXISTING TABLES (Clean slate)
+-- ================================================
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+
+-- ================================================
+-- PART 2: CREATE STORAGE BUCKET FOR PRODUCT IMAGES
+-- ================================================
+-- Note: This creates a public bucket for product images
+-- You'll upload images via the Supabase Dashboard → Storage
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'product-images',
+  'product-images',
+  true,
+  5242880, -- 5MB limit
+  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- ================================================
+-- PART 3: STORAGE POLICIES FOR PUBLIC ACCESS
+-- ================================================
+-- Allow anyone to read images
+CREATE POLICY "Public Access for Product Images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'product-images');
+
+-- Allow authenticated users to upload images (optional - for future admin panel)
+CREATE POLICY "Authenticated users can upload product images"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'product-images' AND auth.role() = 'authenticated');
+
+-- Allow authenticated users to update images (optional - for future admin panel)
+CREATE POLICY "Authenticated users can update product images"
+ON storage.objects FOR UPDATE
+USING (bucket_id = 'product-images' AND auth.role() = 'authenticated');
+
+-- Allow authenticated users to delete images (optional - for future admin panel)
+CREATE POLICY "Authenticated users can delete product images"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'product-images' AND auth.role() = 'authenticated');
+
+-- ================================================
+-- PART 4: CREATE CATEGORIES TABLE
+-- ================================================
+CREATE TABLE categories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(50) NOT NULL,
   icon VARCHAR(10) NOT NULL,
@@ -18,19 +64,21 @@ CREATE TABLE IF NOT EXISTS categories (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add index for faster queries
-CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
-CREATE INDEX IF NOT EXISTS idx_categories_active ON categories(is_active);
+-- Add indexes for faster queries
+CREATE INDEX idx_categories_slug ON categories(slug);
+CREATE INDEX idx_categories_active ON categories(is_active);
+CREATE INDEX idx_categories_order ON categories(display_order);
 
--- 2. Create Products Table
 -- ================================================
-CREATE TABLE IF NOT EXISTS products (
+-- PART 5: CREATE PRODUCTS TABLE
+-- ================================================
+CREATE TABLE products (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   description TEXT,
   price DECIMAL(10, 2) NOT NULL,
-  quantity_label VARCHAR(50), -- e.g., "x5", "Bunch of 5"
-  image_url TEXT,
+  quantity_label VARCHAR(50), -- e.g., "x5", "Bunch of 5", "1kg"
+  image_url TEXT NOT NULL, -- Full URL from storage bucket
   category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
   stock_quantity INTEGER DEFAULT 0,
   is_available BOOLEAN DEFAULT true,
@@ -40,16 +88,19 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- Add indexes for faster queries
-CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
-CREATE INDEX IF NOT EXISTS idx_products_available ON products(is_available);
-CREATE INDEX IF NOT EXISTS idx_products_featured ON products(featured);
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_products_available ON products(is_available);
+CREATE INDEX idx_products_featured ON products(featured);
+CREATE INDEX idx_products_created ON products(created_at DESC);
 
--- 3. Enable Row Level Security (RLS)
+-- ================================================
+-- PART 6: ENABLE ROW LEVEL SECURITY
 -- ================================================
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 
--- 4. Create RLS Policies (Allow public read access)
+-- ================================================
+-- PART 7: CREATE RLS POLICIES
 -- ================================================
 -- Categories: Allow anyone to read
 CREATE POLICY "Allow public read access to categories"
@@ -61,7 +112,8 @@ CREATE POLICY "Allow public read access to products"
   ON products FOR SELECT
   USING (true);
 
--- 5. Insert Sample Categories
+-- ================================================
+-- PART 8: INSERT CATEGORIES
 -- ================================================
 INSERT INTO categories (name, icon, slug, display_order) VALUES
   ('Grocery', '🛒', 'grocery', 1),
@@ -71,98 +123,10 @@ INSERT INTO categories (name, icon, slug, display_order) VALUES
   ('Retail', '🏪', 'retail', 5)
 ON CONFLICT (slug) DO NOTHING;
 
--- 6. Insert Sample Products (Fresh Finds)
 -- ================================================
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Tomato',
-  15.88,
-  'x5',
-  'https://images.unsplash.com/photo-1546470427-e26264be0b0d?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  100,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Tomato');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Lettuce',
-  15.88,
-  NULL,
-  'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  80,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Lettuce');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Banana',
-  15.88,
-  'Bunch of 5',
-  'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  120,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Banana');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Broccoli',
-  15.88,
-  NULL,
-  'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  60,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Broccoli');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Grapes',
-  15.88,
-  NULL,
-  'https://images.unsplash.com/photo-1599819177818-8c1e8c9f7a2e?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  90,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Grapes');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Mango',
-  15.88,
-  NULL,
-  'https://images.unsplash.com/photo-1553279768-865429fa0078?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  75,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Mango');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Watermelon',
-  15.88,
-  NULL,
-  'https://images.unsplash.com/photo-1587049352846-4a222e784210?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  50,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Watermelon');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Apple',
-  15.88,
-  'x5',
-  'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  150,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Apple');
-
--- 7. Create Updated_at Trigger Function
+-- PART 9: CREATE HELPER FUNCTIONS
 -- ================================================
+-- Function to auto-update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -171,14 +135,17 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- 8. Add Triggers to Auto-update updated_at
 -- ================================================
+-- PART 10: ADD TRIGGERS
+-- ================================================
+-- Trigger for categories
 DROP TRIGGER IF EXISTS update_categories_updated_at ON categories;
 CREATE TRIGGER update_categories_updated_at
   BEFORE UPDATE ON categories
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+-- Trigger for products
 DROP TRIGGER IF EXISTS update_products_updated_at ON products;
 CREATE TRIGGER update_products_updated_at
   BEFORE UPDATE ON products
@@ -189,7 +156,21 @@ CREATE TRIGGER update_products_updated_at
 -- SETUP COMPLETE!
 -- ================================================
 -- Next steps:
--- 1. Verify tables were created: Check Tables in Dashboard
--- 2. Verify data was inserted: Run SELECT * FROM categories;
--- 3. Test query: Run SELECT * FROM products WHERE featured = true;
+-- 1. Verify tables: Check 'Table Editor' in Dashboard
+-- 2. Verify storage bucket: Go to Storage → You should see 'product-images' bucket
+-- 3. Upload product images:
+--    - Go to Storage → product-images
+--    - Upload your product images
+--    - Copy the public URL for each image
+-- 4. Insert products with image URLs:
+--    Example:
+--    INSERT INTO products (name, price, image_url, category_id, stock_quantity, featured)
+--    VALUES (
+--      'Fresh Tomato',
+--      15.88,
+--      'https://wqefcyeislvrgqsxouzn.supabase.co/storage/v1/object/public/product-images/tomato.jpg',
+--      (SELECT id FROM categories WHERE slug = 'grocery'),
+--      100,
+--      true
+--    );
 -- ================================================
