@@ -38,7 +38,7 @@ export default function App() {
           <View style={styles.topHeader}>
             <View style={styles.actionBar}>
               <View style={styles.searchBar}>
-                {/* Search bar content will go here */}
+                <Text style={styles.searchText}>Search courses, lessons steps…</Text>
               </View>
             </View>
           </View>
@@ -129,6 +129,20 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 0,
     borderColor: 'rgba(34, 34, 34, 0.1)',
+  },
+  searchText: {
+    flex: 1,
+    width: 1,
+    fontWeight: '600',
+    fontStyle: 'normal',
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#000000',
+    fontSize: 13,
+    letterSpacing: 0,
+    textAlign: 'left',
+    lineHeight: 15.6,
+    numberOfLines: 1,
+    position: 'absolute',
   },
   categories: {
     width: '100%',
