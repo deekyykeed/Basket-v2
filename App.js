@@ -35,7 +35,12 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={styles.topContainer}>
-          {/* Top container content will go here */}
+          <View style={styles.topHeader}>
+            {/* Top header content will go here */}
+          </View>
+          <View style={styles.categories}>
+            {/* Categories content will go here */}
+          </View>
         </View>
         <View style={[styles.card, {
           backgroundColor: theme.card,
@@ -74,6 +79,32 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     flexWrap: 'nowrap',
     gap: 0,
+    borderRadius: 0,
+  },
+  topHeader: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 14,
+    overflow: 'visible',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 8,
+    borderRadius: 0,
+  },
+  categories: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 0,
+    overflow: 'hidden',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
     borderRadius: 0,
   },
   card: {
