@@ -231,13 +231,6 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#e9e6dc',
     borderRadius: 20,
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 1,
-    // Shadow for Android
-    elevation: 2,
   },
   categoryIcon: {
     width: 20,
