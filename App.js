@@ -33,11 +33,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={styles.topContainer}>
+          {/* Top container content will go here */}
+        </View>
         <View style={[styles.card, {
           backgroundColor: theme.card,
           shadowColor: '#000',
-        }]}> 
+        }]}>
           <Text style={[styles.cardText, { color: theme.text }]}>Welcome to Basket v2!</Text>
         </View>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
@@ -52,6 +55,19 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-start',
+    alignItems: 'center',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
+  },
+  topContainer: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     padding: 0,
