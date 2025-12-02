@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
+import { CATEGORY_ICONS, HEADER_ICONS, EMOJI_FALLBACKS } from './lib/icons';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -93,10 +94,26 @@ export default function App() {
           <Text style={styles.logo}>Basket.W</Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
-              <Text style={styles.iconText}>😊</Text>
+              {HEADER_ICONS.profile ? (
+                <Image
+                  source={HEADER_ICONS.profile}
+                  style={styles.iconImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
-              <Text style={styles.iconText}>📋</Text>
+              {HEADER_ICONS.orders ? (
+                <Image
+                  source={HEADER_ICONS.orders}
+                  style={styles.iconImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.orders}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -106,7 +123,15 @@ export default function App() {
           {categories.map((category) => (
             <TouchableOpacity key={category.id} style={styles.categoryButton}>
               <View style={styles.categoryIconContainer}>
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                {CATEGORY_ICONS[category.icon] ? (
+                  <Image
+                    source={CATEGORY_ICONS[category.icon]}
+                    style={styles.categoryIcon}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Text style={{ fontSize: 24 }}>{category.icon}</Text>
+                )}
               </View>
               <Text style={[styles.categoryText, { color: theme.text }]}>{category.name}</Text>
             </TouchableOpacity>
@@ -173,7 +198,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   logo: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
@@ -183,13 +208,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   iconButton: {
-    width: 40,
-    height: 40,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#e9e6dc',
+    overflow: 'hidden',
+    borderRadius: 20,
+    borderWidth: 0,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
-  iconText: {
-    fontSize: 24,
+  iconImage: {
+    width: 20,
+    height: 20,
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -202,18 +233,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryIconContainer: {
-    width: 'min-content',
-    height: 'min-content',
-    borderRadius: 20,
-    backgroundColor: '#E9E6DC',
+    width: 'auto',
+    height: 'auto',
+    minWidth: 'auto',
+    minHeight: 'auto',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 0.25,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
     padding: 10,
+    backgroundColor: '#e9e6dc',
+    overflow: 'hidden',
+    borderRadius: 20,
+    borderWidth: 0,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   categoryIcon: {
-    fontSize: 20,
+    width: 24,
+    height: 24,
   },
   categoryText: {
     fontSize: 12,
