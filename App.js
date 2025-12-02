@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,30 +8,6 @@ import { themes } from './theme';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
-
-// Mock data - will be replaced with Supabase data later
-const CATEGORIES = [
-  { id: 1, name: 'Grocery', icon: '🛒' },
-  { id: 2, name: 'Restaurants', icon: '🍴' },
-  { id: 3, name: 'Alcohol', icon: '🍷' },
-  { id: 4, name: 'Express', icon: '🚚' },
-  { id: 5, name: 'Retail', icon: '🏪' },
-];
-
-const MOCK_PRODUCTS = [
-  { id: 1, name: 'Tomato', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1546470427-e26264be0b0d?w=400' },
-  { id: 2, name: 'Lettuce', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400' },
-  { id: 3, name: 'Banana', price: 15.88, quantity: 'Bunch of 5', image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400' },
-  { id: 4, name: 'Broccoli', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400' },
-  { id: 5, name: 'Grapes', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1599819177818-8c1e8c9f7a2e?w=400' },
-  { id: 6, name: 'Mango', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=400' },
-  { id: 7, name: 'Watermelon', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1587049352846-4a222e784210?w=400' },
-  { id: 8, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 9, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 10, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 11, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 12, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-];
 
 export default function App() {
   const colorScheme = useColorScheme();
@@ -58,65 +34,25 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.logo}>Basket.W</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Text style={styles.iconText}>😊</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Text style={styles.iconText}>📋</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Categories */}
-        <View style={styles.categoriesContainer}>
-          {CATEGORIES.map((category) => (
-            <TouchableOpacity key={category.id} style={styles.categoryButton}>
-              <View style={styles.categoryIconContainer}>
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
+        <View style={styles.topContainer}>
+          <View style={styles.topHeader}>
+            <View style={styles.actionBar}>
+              <View style={styles.searchBar}>
+                {/* Search bar content will go here */}
               </View>
-              <Text style={[styles.categoryText, { color: theme.text }]}>{category.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Text style={styles.searchPlaceholder}>Search...</Text>
+            </View>
+          </View>
+          <View style={styles.categories}>
+            {/* Categories content will go here */}
           </View>
         </View>
-
-        {/* Fresh Finds Section */}
-        <ScrollView style={styles.contentScroll} showsVerticalScrollIndicator={false}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Fresh Finds</Text>
-          </View>
-
-          {/* Product Grid */}
-          <View style={styles.productGrid}>
-            {MOCK_PRODUCTS.map((product) => (
-              <TouchableOpacity key={product.id} style={styles.productCard}>
-                {product.quantity && (
-                  <View style={styles.quantityBadge}>
-                    <Text style={styles.quantityText}>{product.quantity}</Text>
-                  </View>
-                )}
-                <Image
-                  source={{ uri: product.image }}
-                  style={styles.productImage}
-                  resizeMode="cover"
-                />
-                <Text style={[styles.productPrice, { color: theme.text }]}>{product.price}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        <View style={[styles.card, {
+          backgroundColor: theme.card,
+          shadowColor: '#000',
+        }]}>
+          <Text style={[styles.cardText, { color: theme.text }]}>Welcome to Basket v2!</Text>
+        </View>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -125,130 +61,115 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fbf9f5',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
   },
-  logo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
+  topContainer: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
   },
-  iconText: {
-    fontSize: 24,
-  },
-  categoriesContainer: {
+  topHeader: {
+    width: '100%',
+    display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 10,
-    paddingVertical: 16,
-  },
-  categoryButton: {
+    justifyContent: 'center',
     alignItems: 'center',
+    padding: 14,
+    overflow: 'visible',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
     gap: 8,
+    borderRadius: 0,
   },
-  categoryIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#f0ede7',
+  actionBar: {
+    flex: 1,
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  categoryIcon: {
-    fontSize: 32,
-  },
-  categoryText: {
-    fontSize: 12,
-    fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#000',
-  },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+    overflow: 'visible',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 9,
+    borderRadius: 0,
   },
   searchBar: {
-    backgroundColor: '#f0ede7',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  searchPlaceholder: {
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-Regular',
-    color: '#999',
-  },
-  contentScroll: {
     flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    paddingVertical: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#000',
-  },
-  productGrid: {
+    width: 1,
+    display: 'flex',
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingBottom: 20,
-  },
-  productCard: {
-    width: '48%',
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  quantityBadge: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 10,
     position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: '#fff',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    zIndex: 1,
+    borderRadius: 20,
+    borderWidth: 0,
+    borderColor: 'rgba(34, 34, 34, 0.1)',
   },
-  quantityText: {
-    fontSize: 10,
-    fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#000',
-  },
-  productImage: {
+  categories: {
     width: '100%',
-    height: 120,
-    borderRadius: 12,
-    marginBottom: 8,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 0,
+    overflow: 'hidden',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    borderRadius: 0,
   },
-  productPrice: {
+  card: {
+    position: 'absolute',
+    bottom: 32,
+    left: '3%',
+    right: '3%',
+    width: '94%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
+    padding: 12,
+    overflow: 'hidden',
+    zIndex: 1,
+    flexWrap: 'nowrap',
+    gap: 14,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
+    // Shadow for iOS
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    // Shadow for Android
+    elevation: 8,
+  },
+  cardText: {
     fontSize: 16,
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
-    textAlign: 'center',
+    fontFamily: 'FamiljenGrotesk-Medium',
   },
 });
