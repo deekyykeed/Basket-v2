@@ -126,12 +126,12 @@ export default function App() {
               >
                 <View style={styles.categoryIconContainer}>
                   {IconComponent ? (
-                    <IconComponent width={24} height={24} />
+                    <IconComponent width={20} height={20} style={styles.categoryIcon} />
                   ) : (
-                    <Text style={{ fontSize: 24 }}>{category.icon}</Text>
+                    <Text style={{ fontSize: 20 }}>{category.icon}</Text>
                   )}
                 </View>
-                <Text style={[styles.categoryText, { color: theme.text }]}>{category.name}</Text>
+                <Text style={styles.categoryText}>{category.name}</Text>
               </TouchableOpacity>
             );
           })}
@@ -222,31 +222,33 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     alignItems: 'center',
-    gap: 8,
+    gap: 2,
   },
   categoryIconContainer: {
-    width: 'auto',
-    height: 'auto',
-    minWidth: 'auto',
-    minHeight: 'auto',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
     backgroundColor: '#e9e6dc',
-    overflow: 'hidden',
     borderRadius: 20,
-    borderWidth: 0,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 1,
+    // Shadow for Android
+    elevation: 2,
   },
   categoryIcon: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 10,
+    fontWeight: '500',
     fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#000',
+    color: 'rgba(0, 0, 0, 0.85)',
+    lineHeight: 12,
   },
   searchContainer: {
     paddingHorizontal: 20,
