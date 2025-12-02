@@ -95,10 +95,18 @@ export default function App() {
           <Text style={styles.logo}>Basket.W</Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
-              <HEADER_ICONS.profile width={20} height={20} />
+              {HEADER_ICONS.profile ? (
+                <HEADER_ICONS.profile width={20} height={20} />
+              ) : (
+                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
-              <HEADER_ICONS.orders width={20} height={20} />
+              {HEADER_ICONS.orders ? (
+                <HEADER_ICONS.orders width={20} height={20} />
+              ) : (
+                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.orders}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
