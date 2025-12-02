@@ -1,9 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import * as Font from 'expo-font';
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { themes } from './theme';
 
 // Keep the splash screen visible while fonts load
@@ -12,26 +12,20 @@ SplashScreen.preventAutoHideAsync();
 export default function App() {
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  const [fontsLoaded] = useFonts({
+    'FamiljenGrotesk-Regular': require('./assets/fonts/FamiljenGrotesk-Regular.otf'),
+    'FamiljenGrotesk-Medium': require('./assets/fonts/FamiljenGrotesk-Medium.otf'),
+    'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk-SemiBold.otf'),
+    'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk-Bold.otf'),
+    'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk-Italic.otf'),
+  });
 
   useEffect(() => {
-    async function loadFonts() {
-      try {
-        await Font.loadAsync({
-          'FamiljenGrotesk-Regular': require('./assets/fonts/FamiljenGrotesk-Regular.otf'),
-          'FamiljenGrotesk-Medium': require('./assets/fonts/FamiljenGrotesk-Medium.otf'),
-          'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk-SemiBold.otf'),
-          'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk-Bold.otf'),
-          'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk-Italic.otf'),
-        });
-        setFontsLoaded(true);
-        await SplashScreen.hideAsync();
-      } catch (error) {
-        console.error('Error loading fonts:', error);
-      }
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
     }
-    loadFonts();
-  }, []);
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;
@@ -40,11 +34,23 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={styles.topContainer}>
+          <View style={styles.topHeader}>
+            <View style={styles.actionBar}>
+              <View style={styles.searchBar}>
+                {/* Search bar content will go here */}
+              </View>
+            </View>
+          </View>
+          <View style={styles.categories}>
+            {/* Categories content will go here */}
+          </View>
+        </View>
         <View style={[styles.card, {
           backgroundColor: theme.card,
           shadowColor: '#000',
         }]}>
-          <Text style={styles.cardText}>K341.45</Text>
+          <Text style={[styles.cardText, { color: theme.text }]}>Welcome to Basket v2!</Text>
         </View>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </SafeAreaView>
@@ -64,6 +70,77 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     flexWrap: 'nowrap',
     gap: 0,
+    borderRadius: 0,
+  },
+  topContainer: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
+  },
+  topHeader: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 14,
+    overflow: 'visible',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 8,
+    borderRadius: 0,
+  },
+  actionBar: {
+    flex: 1,
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'visible',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 9,
+    borderRadius: 0,
+  },
+  searchBar: {
+    flex: 1,
+    width: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 10,
+    position: 'absolute',
+    borderRadius: 20,
+    borderWidth: 0,
+    borderColor: 'rgba(34, 34, 34, 0.1)',
+  },
+  categories: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 0,
+    overflow: 'hidden',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
     borderRadius: 0,
   },
   card: {
@@ -92,11 +169,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cardText: {
-    width: '100%',
-    fontWeight: '500',
-    fontFamily: 'FamiljenGrotesk-Medium',
-    color: 'rgba(0, 0, 0, 0.6)',
     fontSize: 16,
-    lineHeight: 19.2,
+    fontFamily: 'FamiljenGrotesk-Medium',
   },
 });
