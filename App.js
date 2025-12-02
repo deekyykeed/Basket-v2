@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
+import { CATEGORY_ICONS, HEADER_ICONS, EMOJI_FALLBACKS } from './lib/icons';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -93,10 +94,26 @@ export default function App() {
           <Text style={styles.logo}>Basket.W</Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
-              <Text style={styles.iconText}>😊</Text>
+              {HEADER_ICONS.profile ? (
+                <Image
+                  source={HEADER_ICONS.profile}
+                  style={styles.iconImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
-              <Text style={styles.iconText}>📋</Text>
+              {HEADER_ICONS.orders ? (
+                <Image
+                  source={HEADER_ICONS.orders}
+                  style={styles.iconImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.orders}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -106,7 +123,15 @@ export default function App() {
           {categories.map((category) => (
             <TouchableOpacity key={category.id} style={styles.categoryButton}>
               <View style={styles.categoryIconContainer}>
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                {CATEGORY_ICONS[category.icon] ? (
+                  <Image
+                    source={CATEGORY_ICONS[category.icon]}
+                    style={styles.categoryIcon}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Text style={{ fontSize: 24 }}>{category.icon}</Text>
+                )}
               </View>
               <Text style={[styles.categoryText, { color: theme.text }]}>{category.name}</Text>
             </TouchableOpacity>
