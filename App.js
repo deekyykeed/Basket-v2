@@ -1,39 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { themes } from './theme';
+import { supabase } from './lib/supabase';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
 
-// Mock data - will be replaced with Supabase data later
-const CATEGORIES = [
-  { id: 1, name: 'Grocery', icon: '🛒' },
-  { id: 2, name: 'Restaurants', icon: '🍴' },
-  { id: 3, name: 'Alcohol', icon: '🍷' },
-  { id: 4, name: 'Express', icon: '🚚' },
-  { id: 5, name: 'Retail', icon: '🏪' },
-];
-
-const MOCK_PRODUCTS = [
-  { id: 1, name: 'Tomato', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1546470427-e26264be0b0d?w=400' },
-  { id: 2, name: 'Lettuce', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400' },
-  { id: 3, name: 'Banana', price: 15.88, quantity: 'Bunch of 5', image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400' },
-  { id: 4, name: 'Broccoli', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400' },
-  { id: 5, name: 'Grapes', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1599819177818-8c1e8c9f7a2e?w=400' },
-  { id: 6, name: 'Mango', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=400' },
-  { id: 7, name: 'Watermelon', price: 15.88, quantity: '', image: 'https://images.unsplash.com/photo-1587049352846-4a222e784210?w=400' },
-  { id: 8, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 9, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 10, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 11, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-  { id: 12, name: 'Apple', price: 15.88, quantity: 'x5', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400' },
-];
-
 export default function App() {
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
@@ -50,6 +30,54 @@ export default function App() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  // Fetch categories from Supabase
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Fetch products from Supabase
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error.message);
+      // Fallback to empty array
+      setCategories([]);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_available', true)
+        .eq('featured', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error.message);
+      // Fallback to empty array
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!fontsLoaded) {
     return null;
@@ -75,7 +103,7 @@ export default function App() {
 
         {/* Categories */}
         <View style={styles.categoriesContainer}>
-          {CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <TouchableOpacity key={category.id} style={styles.categoryButton}>
               <View style={styles.categoryIconContainer}>
                 <Text style={styles.categoryIcon}>{category.icon}</Text>
@@ -98,24 +126,34 @@ export default function App() {
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Fresh Finds</Text>
           </View>
 
-          {/* Product Grid */}
-          <View style={styles.productGrid}>
-            {MOCK_PRODUCTS.map((product) => (
-              <TouchableOpacity key={product.id} style={styles.productCard}>
-                {product.quantity && (
-                  <View style={styles.quantityBadge}>
-                    <Text style={styles.quantityText}>{product.quantity}</Text>
-                  </View>
-                )}
-                <Image
-                  source={{ uri: product.image }}
-                  style={styles.productImage}
-                  resizeMode="cover"
-                />
-                <Text style={[styles.productPrice, { color: theme.text }]}>{product.price}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {/* Loading Indicator */}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={theme.text} />
+              <Text style={[styles.loadingText, { color: theme.text }]}>Loading products...</Text>
+            </View>
+          ) : (
+            /* Product Grid */
+            <View style={styles.productGrid}>
+              {products.map((product) => (
+                <TouchableOpacity key={product.id} style={styles.productCard}>
+                  {product.quantity_label && (
+                    <View style={styles.quantityBadge}>
+                      <Text style={styles.quantityText}>{product.quantity_label}</Text>
+                    </View>
+                  )}
+                  <Image
+                    source={{ uri: product.image_url }}
+                    style={styles.productImage}
+                    resizeMode="cover"
+                  />
+                  <Text style={[styles.productPrice, { color: theme.text }]}>
+                    {parseFloat(product.price).toFixed(2)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -250,5 +288,16 @@ const styles = StyleSheet.create({
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Regular',
   },
 });
