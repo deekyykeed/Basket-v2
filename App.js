@@ -163,7 +163,6 @@ export default function App() {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  theme={theme}
                   onPress={(product) => {
                     // Handle product press - navigate to product detail
                     console.log('Product pressed:', product.name);
