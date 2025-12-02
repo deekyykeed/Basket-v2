@@ -38,7 +38,7 @@ export default function App() {
           <View style={styles.topHeader}>
             <View style={styles.actionBar}>
               <View style={styles.searchBar}>
-                <Text style={styles.searchText}>Search courses, lessons steps…</Text>
+                <Text style={{ color: '#999999', fontFamily: 'FamiljenGrotesk-Regular' }}>Search</Text>
               </View>
             </View>
           </View>
