@@ -12,8 +12,16 @@ import ProductCard from './components/ProductCard';
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
 
+// Static categories - always available, not dependent on Supabase
+const STATIC_CATEGORIES = [
+  { id: 1, name: 'Grocery', icon: '🛒' },
+  { id: 2, name: 'Restaurants', icon: '🍴' },
+  { id: 3, name: 'Alcohol', icon: '🍷' },
+  { id: 4, name: 'Express', icon: '🚚' },
+  { id: 5, name: 'Retail', icon: '🏪' },
+];
+
 export default function App() {
-  const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
@@ -33,32 +41,10 @@ export default function App() {
     }
   }, [fontsLoaded]);
 
-  // Fetch categories from Supabase
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   // Fetch products from Supabase
   useEffect(() => {
     fetchProducts();
   }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error.message);
-      // Fallback to empty array
-      setCategories([]);
-    }
-  };
 
   const fetchProducts = async () => {
     try {
@@ -113,7 +99,7 @@ export default function App() {
 
         {/* Categories */}
         <View style={styles.categoriesContainer}>
-          {categories.map((category) => {
+          {STATIC_CATEGORIES.map((category) => {
             const IconComponent = CATEGORY_ICONS[category.icon];
             return (
               <TouchableOpacity key={category.id} style={styles.categoryButton}>
