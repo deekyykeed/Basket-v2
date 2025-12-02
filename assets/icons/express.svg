@@ -1,7 +1,10 @@
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="Bag--Streamline-Solar-Ar" height="24" width="24">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" id="Truck-Return--Streamline-Tabler" height="24" width="24">
   <desc>
-    Bag Streamline Icon: https://streamlinehq.com
+    Truck Return Streamline Icon: https://streamlinehq.com
   </desc>
-  <path d="M3.74169 20.5545C4.94131 22 7.17402 22 11.6394 22h0.7212c4.4654 0 6.6981 0 7.8978 -1.4455m-16.51671 0c-1.19962 -1.4454 -0.78816 -3.6399 0.03476 -8.0288 0.58522 -3.12118 0.87783 -4.68177 1.98873 -5.60374M3.74169 20.5545Zm16.51671 0c1.1996 -1.4454 0.7881 -3.6399 -0.0348 -8.0288 -0.5852 -3.12118 -0.8778 -4.68177 -1.9887 -5.60374m2.0235 13.63254c-0.0001 0 0 0 0 0ZM18.2349 6.92196C17.124 6 15.5362 6 12.3606 6h-0.7212c-3.17554 0 -4.76332 0 -5.87422 0.92196m12.46972 0Zm-12.46972 0Z" stroke="#000000" stroke-width="1.5"></path>
-  <path d="M9 6V5c0 -1.65685 1.3431 -3 3 -3s3 1.34315 3 3v1" stroke="#000000" stroke-linecap="round" stroke-width="1.5"></path>
+  <path d="M5 17a2 2 0 1 0 4 0 2 2 0 1 0 -4 0" stroke-width="2"></path>
+  <path d="M15 17a2 2 0 1 0 4 0 2 2 0 1 0 -4 0" stroke-width="2"></path>
+  <path d="M5 17H3V6a1 1 0 0 1 1 -1h9v6H8l2 2m0 -4 -2 2" stroke-width="2"></path>
+  <path d="m9 17 6 0" stroke-width="2"></path>
+  <path d="M13 6h5l3 5v6h-2" stroke-width="2"></path>
 </svg>

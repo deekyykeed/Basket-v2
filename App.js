@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     height: 20,
   },
   categoryText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: 'FamiljenGrotesk-Medium',
     color: 'rgba(0, 0, 0, 0.85)',
