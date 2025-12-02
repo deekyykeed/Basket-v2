@@ -1,9 +1,9 @@
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { CATEGORY_ICONS, HEADER_ICONS, EMOJI_FALLBACKS } from './lib/icons';
@@ -95,22 +95,20 @@ export default function App() {
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
               {HEADER_ICONS.profile ? (
-                <Image
-                  source={HEADER_ICONS.profile}
-                  style={styles.iconImage}
-                  resizeMode="contain"
-                />
+                React.createElement(HEADER_ICONS.profile, {
+                  width: 20,
+                  height: 20,
+                })
               ) : (
                 <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
               )}
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
               {HEADER_ICONS.orders ? (
-                <Image
-                  source={HEADER_ICONS.orders}
-                  style={styles.iconImage}
-                  resizeMode="contain"
-                />
+                React.createElement(HEADER_ICONS.orders, {
+                  width: 20,
+                  height: 20,
+                })
               ) : (
                 <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.orders}</Text>
               )}
@@ -124,11 +122,10 @@ export default function App() {
             <TouchableOpacity key={category.id} style={styles.categoryButton}>
               <View style={styles.categoryIconContainer}>
                 {CATEGORY_ICONS[category.icon] ? (
-                  <Image
-                    source={CATEGORY_ICONS[category.icon]}
-                    style={styles.categoryIcon}
-                    resizeMode="contain"
-                  />
+                  React.createElement(CATEGORY_ICONS[category.icon], {
+                    width: 24,
+                    height: 24,
+                  })
                 ) : (
                   <Text style={{ fontSize: 24 }}>{category.icon}</Text>
                 )}

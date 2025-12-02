@@ -1,31 +1,32 @@
-# 🎨 Custom Icons Setup Guide
+# 🎨 Custom SVG Icons Setup Guide
 
-Your app is now configured to use custom PNG icons instead of emojis!
+Your app is now configured to use custom SVG icons instead of emojis!
 
 ## ✅ What's Been Set Up
 
 1. **Icon folder created**: `/assets/icons/`
-2. **Icon loader configured**: Safely loads icons with emoji fallbacks
-3. **App.js updated**: Uses custom icons for categories and header
-4. **react-native-svg installed**: For future SVG support
+2. **SVG support configured**: Metro bundler configured with `react-native-svg-transformer`
+3. **Icon loader configured**: Safely loads SVG icons with emoji fallbacks
+4. **App.js updated**: Renders SVG components for categories and header
+5. **Dependencies installed**: `react-native-svg` and `react-native-svg-transformer`
 
 ## 📋 Required Icon Files
 
-Add these 7 PNG files to the `/assets/icons/` folder:
+Add these 7 SVG files to the `/assets/icons/` folder:
 
-### Category Icons (24x24px recommended)
+### Category Icons (viewBox="0 0 24 24" recommended)
 ```
-assets/icons/grocery.png       - Shopping cart icon
-assets/icons/restaurant.png    - Fork/knife or restaurant icon
-assets/icons/alcohol.png        - Wine glass icon
-assets/icons/express.png        - Truck/delivery icon
-assets/icons/retail.png         - Store/shop icon
+assets/icons/grocery.svg       - Shopping cart icon
+assets/icons/restaurant.svg    - Fork/knife or restaurant icon
+assets/icons/alcohol.svg        - Wine glass icon
+assets/icons/express.svg        - Truck/delivery icon
+assets/icons/retail.svg         - Store/shop icon
 ```
 
-### Header Icons (20x20px recommended)
+### Header Icons (viewBox="0 0 20 20" recommended)
 ```
-assets/icons/profile.png        - User/profile icon
-assets/icons/orders.png         - Clipboard/orders icon
+assets/icons/profile.svg        - User/profile icon
+assets/icons/orders.svg         - Clipboard/orders icon
 ```
 
 ## 🎯 Quick Start
@@ -58,13 +59,17 @@ Download icons from these free resources:
 If you're using Figma, Sketch, or Adobe XD:
 
 1. Design or find your icons
-2. Export each icon as PNG:
-   - Size: 24x24px (categories) or 20x20px (header)
-   - Resolution: @2x or @3x for retina displays
-   - Color: Black (#000000) on transparent background
-   - Format: PNG with transparency
-3. Rename to match required names
-4. Place in `/assets/icons/`
+2. Export each icon as SVG:
+   - Frame size: 24x24px (categories) or 20x20px (header)
+   - Color: Black (#000000) or use `currentColor` for theme support
+   - Format: SVG
+   - Settings:
+     - Include viewBox
+     - Remove unnecessary groups/IDs
+     - Outline strokes (convert to paths)
+3. Clean up the SVG file (remove metadata)
+4. Rename to match required names
+5. Place in `/assets/icons/`
 
 ## 📦 Installation Steps
 
@@ -89,102 +94,115 @@ cd "C:\Users\Khadzika\OneDrive\Desktop\Basket v2"
 
 ### Step 3: Verify File Names
 Ensure exact names (lowercase, no spaces):
-- ✅ `grocery.png`
-- ❌ `Grocery.png`
-- ❌ `shopping-cart.png`
+- ✅ `grocery.svg`
+- ❌ `Grocery.svg`
+- ❌ `shopping-cart.svg`
 
-### Step 4: Restart App
+### Step 4: Restart App with Cache Clear
 ```bash
 # Stop the current server (Ctrl+C)
-# Clear cache and restart
+# IMPORTANT: Clear cache when adding SVG files
 npx expo start -c
 ```
 
-## 🎨 Icon Specifications
+## 🎨 SVG Icon Specifications
 
-### Size Guidelines
-- **Category icons**: 24x24px to 48x48px
-- **Header icons**: 20x20px to 40x40px
-- **For retina displays**: Use 48x48px (@2x) or 72x72px (@3x)
+### ViewBox Guidelines
+- **Category icons**: `viewBox="0 0 24 24"`
+- **Header icons**: `viewBox="0 0 20 20"`
+- SVGs scale perfectly, so use viewBox instead of fixed width/height
 
-### Design Guidelines
-- **Color**: Black (#000000) or dark gray (#1a1a1a)
-- **Background**: Transparent (no background)
+### Design Guidelines for SVG
+- **Color**: Use `currentColor` for dynamic theming, or black (#000000)
+- **Stroke Width**: 1.5-2px for line icons
 - **Style**: Line icons or simple filled shapes
-- **Stroke**: 1.5-2px stroke width for line icons
-- **Padding**: Leave 10-15% padding around icon
+- **ViewBox**: Always include viewBox attribute
+- **Clean Code**: Remove unnecessary groups, IDs, metadata
+- **Path Only**: Convert text and strokes to paths
+
+### Example SVG Structure
+```xml
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M3 3h18v18H3z" stroke="currentColor" stroke-width="2"/>
+</svg>
+```
 
 ### Example Export Settings (Figma)
-1. Select icon frame
+1. Select icon frame (24x24px or 20x20px)
 2. Export settings:
-   - Format: PNG
-   - Size: 2x (for 48x48px from 24x24px frame)
-   - Include in export: ✓
-3. Download and rename
+   - Format: SVG
+   - Include "id" attribute: ❌ (uncheck)
+   - Outline strokes: ✓ (check)
+3. Download and clean up if needed
+4. Rename to match required name
 
 ## 🔄 Current Behavior
 
-**Right now (without custom icons):**
+**Right now (without custom SVG icons):**
 - App shows emoji fallbacks (🛒, 🍴, 🍷, etc.)
 - Everything works normally
+- No crashes or errors
 
-**After adding custom icons:**
-- App automatically uses your PNG icons
+**After adding custom SVG icons:**
+- App automatically uses your SVG icons as React components
+- Perfect scaling at any size
 - Styled with proper containers and spacing
 - Consistent look across the app
+- Support for theme colors (if using `currentColor`)
 
-## 🛠️ Advanced: Using SVG Icons
+## ⚙️ Technical Details
 
-If you prefer SVG format:
+### How SVG Loading Works
+1. `metro.config.js` configures Metro bundler to handle SVG files
+2. `react-native-svg-transformer` converts SVG files to React components
+3. `lib/icons.js` safely loads icons with try/catch
+4. `App.js` renders SVG components using `React.createElement`
+5. Falls back to emoji if SVG file is missing
 
-### Step 1: Add SVG Files
-Save SVG files with same names (e.g., `grocery.svg`)
-
-### Step 2: Update Icon Loader
-Edit `/lib/icons.js`:
-```javascript
-// Change .png to .svg
-'🛒': loadIcon('../assets/icons/grocery.svg'),
-```
-
-### Step 3: Use SVG Component
-Update `App.js` to use `react-native-svg` components instead of `Image`
+### Metro Configuration
+The project includes `metro.config.js` with:
+- SVG files treated as source files (not assets)
+- Babel transformer configured for SVG processing
+- Proper resolver configuration
 
 ## 🐛 Troubleshooting
 
 ### Icons not appearing
-**Problem**: Still seeing emojis after adding PNG files
+**Problem**: Still seeing emojis after adding SVG files
 
 **Solutions**:
-1. Check file names match exactly (case-sensitive)
+1. Check file names match exactly (case-sensitive, must be `.svg`)
 2. Ensure files are in `/assets/icons/` folder
-3. Clear Metro cache: `npx expo start -c`
-4. Restart development server
+3. **CRITICAL**: Clear Metro cache and restart: `npx expo start -c`
+4. Verify SVG files are valid (open in browser or code editor)
+5. Check `metro.config.js` exists in project root
 
-### Icons are blurry
-**Problem**: Icons look pixelated or blurry
-
-**Solutions**:
-1. Use higher resolution (@2x or @3x)
-2. Export at 48x48px instead of 24x24px
-3. Use vector formats (SVG) for perfect scaling
-
-### App crashes after adding icons
-**Problem**: App shows error when loading icons
+### Metro bundler errors
+**Problem**: Errors about SVG files or transformer
 
 **Solutions**:
-1. Verify all 7 icon files exist
-2. Check file format is PNG (not JPG or other)
-3. Ensure transparent background (not white)
-4. Try with just one icon first to isolate issue
+1. Verify `react-native-svg-transformer` is installed: `npm list react-native-svg-transformer`
+2. Check `metro.config.js` configuration
+3. Delete `node_modules/.cache` folder
+4. Restart: `npx expo start -c`
 
-### Icons have wrong color
-**Problem**: Icons don't match app theme
+### SVG renders but looks wrong
+**Problem**: Icon displays but appears broken or incorrectly sized
 
 **Solutions**:
-1. Use black icons on transparent background
-2. App will handle theming automatically
-3. Avoid using colored icons
+1. Remove fixed `width` and `height` from `<svg>` tag (use viewBox only)
+2. Ensure viewBox matches design: `viewBox="0 0 24 24"`
+3. Check path data is valid
+4. Simplify SVG (remove unnecessary groups, transforms)
+5. Use `currentColor` for stroke/fill instead of hard-coded colors
+
+### Icons have wrong color or don't support theming
+**Problem**: Icons show wrong colors or don't adapt to theme
+
+**Solutions**:
+1. Use `stroke="currentColor"` or `fill="currentColor"` in SVG
+2. Remove hard-coded color values from SVG paths
+3. App will inject proper theme colors automatically
 
 ## 📱 Testing Checklist
 
@@ -214,4 +232,4 @@ If you're stuck:
 
 ---
 
-**Current Status**: Icon infrastructure ready. Add your 7 PNG files to start using custom icons!
+**Current Status**: SVG icon infrastructure fully configured! Add your 7 SVG files to `/assets/icons/` and restart with `npx expo start -c`
