@@ -94,45 +94,31 @@ export default function App() {
           <Text style={styles.logo}>Basket.W</Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
-              {HEADER_ICONS.profile ? (
-                React.createElement(HEADER_ICONS.profile, {
-                  width: 20,
-                  height: 20,
-                })
-              ) : (
-                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
-              )}
+              <HEADER_ICONS.profile width={20} height={20} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
-              {HEADER_ICONS.orders ? (
-                React.createElement(HEADER_ICONS.orders, {
-                  width: 20,
-                  height: 20,
-                })
-              ) : (
-                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.orders}</Text>
-              )}
+              <HEADER_ICONS.orders width={20} height={20} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Categories */}
         <View style={styles.categoriesContainer}>
-          {categories.map((category) => (
-            <TouchableOpacity key={category.id} style={styles.categoryButton}>
-              <View style={styles.categoryIconContainer}>
-                {CATEGORY_ICONS[category.icon] ? (
-                  React.createElement(CATEGORY_ICONS[category.icon], {
-                    width: 24,
-                    height: 24,
-                  })
-                ) : (
-                  <Text style={{ fontSize: 24 }}>{category.icon}</Text>
-                )}
-              </View>
-              <Text style={[styles.categoryText, { color: theme.text }]}>{category.name}</Text>
-            </TouchableOpacity>
-          ))}
+          {categories.map((category) => {
+            const IconComponent = CATEGORY_ICONS[category.icon];
+            return (
+              <TouchableOpacity key={category.id} style={styles.categoryButton}>
+                <View style={styles.categoryIconContainer}>
+                  {IconComponent ? (
+                    <IconComponent width={24} height={24} />
+                  ) : (
+                    <Text style={{ fontSize: 24 }}>{category.icon}</Text>
+                  )}
+                </View>
+                <Text style={[styles.categoryText, { color: theme.text }]}>{category.name}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Search Bar */}
