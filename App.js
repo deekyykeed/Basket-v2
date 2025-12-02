@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   logo: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
@@ -202,15 +202,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#f0ede7',
+    width: 'min-content',
+    height: 'min-content',
+    borderRadius: 20,
+    backgroundColor: '#E9E6DC',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 0.25,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    padding: 10,
   },
   categoryIcon: {
-    fontSize: 32,
+    fontSize: 20,
   },
   categoryText: {
     fontSize: 12,
