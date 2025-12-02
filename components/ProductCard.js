@@ -1,11 +1,19 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 export default function ProductCard({ product, theme, onPress }) {
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (onPress) {
+      onPress(product);
+    }
+  };
+
   return (
     <TouchableOpacity
       style={styles.productCard}
-      onPress={() => onPress && onPress(product)}
+      onPress={handlePress}
     >
       {product.quantity_label && (
         <View style={styles.quantityBadge}>

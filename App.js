@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, A
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Haptics from 'expo-haptics';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { CATEGORY_ICONS, HEADER_ICONS, EMOJI_FALLBACKS } from './lib/icons';
@@ -80,14 +81,26 @@ export default function App() {
         <View style={styles.header}>
           <Text style={styles.logo}>Basket.W</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                // Handle profile press
+              }}
+            >
               {HEADER_ICONS.profile ? (
                 <HEADER_ICONS.profile width={20} height={20} />
               ) : (
                 <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
               )}
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                // Handle orders press
+              }}
+            >
               {HEADER_ICONS.orders ? (
                 <HEADER_ICONS.orders width={20} height={20} />
               ) : (
@@ -102,7 +115,15 @@ export default function App() {
           {STATIC_CATEGORIES.map((category) => {
             const IconComponent = CATEGORY_ICONS[category.icon];
             return (
-              <TouchableOpacity key={category.id} style={styles.categoryButton}>
+              <TouchableOpacity
+                key={category.id}
+                style={styles.categoryButton}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  // Handle category press - navigate to category page
+                  console.log('Category pressed:', category.name);
+                }}
+              >
                 <View style={styles.categoryIconContainer}>
                   {IconComponent ? (
                     <IconComponent width={24} height={24} />
