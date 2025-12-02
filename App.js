@@ -36,7 +36,9 @@ export default function App() {
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={styles.topContainer}>
           <View style={styles.topHeader}>
-            {/* Top header content will go here */}
+            <View style={styles.actionBar}>
+              {/* Action bar content will go here */}
+            </View>
           </View>
           <View style={styles.categories}>
             {/* Categories content will go here */}
@@ -92,6 +94,20 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     flexWrap: 'nowrap',
     gap: 8,
+    borderRadius: 0,
+  },
+  actionBar: {
+    flex: 1,
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'visible',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 9,
     borderRadius: 0,
   },
   categories: {
