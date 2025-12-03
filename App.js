@@ -9,6 +9,7 @@ import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { CATEGORY_ICONS, HEADER_ICONS, EMOJI_FALLBACKS } from './lib/icons';
 import ProductCard from './components/ProductCard';
+import GlassView from './components/GlassView';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -82,30 +83,40 @@ export default function App() {
           <Text style={styles.logo}>Basket.W</Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity
-              style={styles.iconButton}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 // Handle profile press
               }}
             >
-              {HEADER_ICONS.profile ? (
-                <HEADER_ICONS.profile width={20} height={20} />
-              ) : (
-                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
-              )}
+              <GlassView
+                style={styles.iconButton}
+                intensity={30}
+                tint="light"
+              >
+                {HEADER_ICONS.profile ? (
+                  <HEADER_ICONS.profile width={20} height={20} />
+                ) : (
+                  <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.profile}</Text>
+                )}
+              </GlassView>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.iconButton}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 // Handle orders press
               }}
             >
-              {HEADER_ICONS.orders ? (
-                <HEADER_ICONS.orders width={20} height={20} />
-              ) : (
-                <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.orders}</Text>
-              )}
+              <GlassView
+                style={styles.iconButton}
+                intensity={30}
+                tint="light"
+              >
+                {HEADER_ICONS.orders ? (
+                  <HEADER_ICONS.orders width={20} height={20} />
+                ) : (
+                  <Text style={{ fontSize: 20 }}>{EMOJI_FALLBACKS.orders}</Text>
+                )}
+              </GlassView>
             </TouchableOpacity>
           </View>
         </View>
@@ -124,13 +135,17 @@ export default function App() {
                   console.log('Category pressed:', category.name);
                 }}
               >
-                <View style={styles.categoryIconContainer}>
+                <GlassView
+                  style={styles.categoryIconContainer}
+                  intensity={30}
+                  tint="light"
+                >
                   {IconComponent ? (
                     <IconComponent width={20} height={20} style={styles.categoryIcon} />
                   ) : (
                     <Text style={{ fontSize: 20 }}>{category.icon}</Text>
                   )}
-                </View>
+                </GlassView>
                 <Text style={styles.categoryText}>{category.name}</Text>
               </TouchableOpacity>
             );
@@ -139,9 +154,13 @@ export default function App() {
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
+          <GlassView
+            style={styles.searchBar}
+            intensity={25}
+            tint="light"
+          >
             <Text style={styles.searchPlaceholder}>Search...</Text>
-          </View>
+          </GlassView>
         </View>
 
         {/* Fresh Finds Section */}
@@ -204,7 +223,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#e9e6dc',
+    backgroundColor: 'rgba(233, 230, 220, 0.3)',
     overflow: 'hidden',
     borderRadius: 20,
     borderWidth: 0,
@@ -229,7 +248,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#e9e6dc',
+    backgroundColor: 'rgba(233, 230, 220, 0.3)',
     borderRadius: 20,
   },
   categoryIcon: {
@@ -248,7 +267,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   searchBar: {
-    backgroundColor: '#f0ede7',
+    backgroundColor: 'rgba(240, 237, 231, 0.4)',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
