@@ -1,26 +1,34 @@
 import React from 'react';
-import { GlassView as ExpoGlassView } from 'expo-glass-effect';
+import { StyleSheet } from 'react-native';
+import { BlurView } from 'expo-blur';
 
 /**
- * GlassView - A wrapper component for expo-glass-effect's GlassView
- * Provides iOS 26+ native liquid glass effect
- * Falls back to regular View on unsupported platforms
+ * GlassView - A reusable component that provides a glass effect
+ * Uses BlurView from expo-blur for cross-platform support (iOS & Android)
  */
 export default function GlassView({
   children,
   style,
   glassEffectStyle = 'regular',
-  isInteractive = false,
   tintColor
 }) {
+  // Map glassEffectStyle to expo-blur properties
+  const intensity = glassEffectStyle === 'clear' ? 15 : 30;
+  const tint = tintColor || 'light';
+
   return (
-    <ExpoGlassView
-      style={style}
-      glassEffectStyle={glassEffectStyle}
-      isInteractive={isInteractive}
-      tintColor={tintColor}
+    <BlurView
+      intensity={intensity}
+      tint={tint}
+      style={[styles.blurView, style]}
     >
       {children}
-    </ExpoGlassView>
+    </BlurView>
   );
 }
+
+const styles = StyleSheet.create({
+  blurView: {
+    overflow: 'hidden',
+  },
+});
