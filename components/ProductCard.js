@@ -24,8 +24,7 @@ export default function ProductCard({ product, onPress }) {
         />
         <GlassView
           style={styles.glassOverlay}
-          intensity={15}
-          tint="light"
+          glassEffectStyle="clear"
         />
       </View>
     </TouchableOpacity>

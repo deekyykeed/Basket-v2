@@ -90,8 +90,7 @@ export default function App() {
             >
               <GlassView
                 style={styles.iconButton}
-                intensity={30}
-                tint="light"
+                glassEffectStyle="regular"
               >
                 {HEADER_ICONS.profile ? (
                   <HEADER_ICONS.profile width={20} height={20} />
@@ -108,8 +107,7 @@ export default function App() {
             >
               <GlassView
                 style={styles.iconButton}
-                intensity={30}
-                tint="light"
+                glassEffectStyle="regular"
               >
                 {HEADER_ICONS.orders ? (
                   <HEADER_ICONS.orders width={20} height={20} />
@@ -137,8 +135,7 @@ export default function App() {
               >
                 <GlassView
                   style={styles.categoryIconContainer}
-                  intensity={30}
-                  tint="light"
+                  glassEffectStyle="regular"
                 >
                   {IconComponent ? (
                     <IconComponent width={20} height={20} style={styles.categoryIcon} />
@@ -156,8 +153,7 @@ export default function App() {
         <View style={styles.searchContainer}>
           <GlassView
             style={styles.searchBar}
-            intensity={25}
-            tint="light"
+            glassEffectStyle="regular"
           >
             <Text style={styles.searchPlaceholder}>Search...</Text>
           </GlassView>
