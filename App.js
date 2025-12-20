@@ -16,6 +16,11 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
+  const [selectedProducts, setSelectedProducts] = useState([
+    { id: 1 },
+    { id: 2 },
+    { id: 3 },
+  ]);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
@@ -155,90 +160,11 @@ export default function App() {
 
         {/* Bottom Control Center */}
         <View style={styles.bottomControlCenter}>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => setActiveTab('home')}
-          >
-            <BOTTOM_NAV_ICONS.home
-              size={24}
-              color={activeTab === 'home' ? '#000' : '#999'}
-              strokeWidth={activeTab === 'home' ? 2 : 1.5}
-            />
-            <Text style={[
-              styles.controlButtonText,
-              { color: activeTab === 'home' ? theme.text : '#999' }
-            ]}>
-              Home
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => setActiveTab('search')}
-          >
-            <BOTTOM_NAV_ICONS.search
-              size={24}
-              color={activeTab === 'search' ? '#000' : '#999'}
-              strokeWidth={activeTab === 'search' ? 2 : 1.5}
-            />
-            <Text style={[
-              styles.controlButtonText,
-              { color: activeTab === 'search' ? theme.text : '#999' }
-            ]}>
-              Search
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => setActiveTab('cart')}
-          >
-            <BOTTOM_NAV_ICONS.cart
-              size={24}
-              color={activeTab === 'cart' ? '#000' : '#999'}
-              strokeWidth={activeTab === 'cart' ? 2 : 1.5}
-            />
-            <Text style={[
-              styles.controlButtonText,
-              { color: activeTab === 'cart' ? theme.text : '#999' }
-            ]}>
-              Cart
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => setActiveTab('favorites')}
-          >
-            <BOTTOM_NAV_ICONS.favorites
-              size={24}
-              color={activeTab === 'favorites' ? '#000' : '#999'}
-              strokeWidth={activeTab === 'favorites' ? 2 : 1.5}
-            />
-            <Text style={[
-              styles.controlButtonText,
-              { color: activeTab === 'favorites' ? theme.text : '#999' }
-            ]}>
-              Favorites
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => setActiveTab('profile')}
-          >
-            <BOTTOM_NAV_ICONS.profile
-              size={24}
-              color={activeTab === 'profile' ? '#000' : '#999'}
-              strokeWidth={activeTab === 'profile' ? 2 : 1.5}
-            />
-            <Text style={[
-              styles.controlButtonText,
-              { color: activeTab === 'profile' ? theme.text : '#999' }
-            ]}>
-              Profile
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.productGridControl}>
+            {selectedProducts.map((product) => (
+              <View key={product.id} style={styles.productCellControl} />
+            ))}
+          </View>
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -377,12 +303,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
     backgroundColor: '#fff',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderTopWidth: 1,
     borderTopColor: '#e9e6dc',
     shadowColor: '#000',
@@ -392,16 +315,18 @@ const styles = StyleSheet.create({
     elevation: 20,
     zIndex: 1000,
   },
-  controlButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+  productGridControl: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 12,
+    flexWrap: 'wrap',
   },
-  controlButtonText: {
-    fontSize: 11,
-    fontFamily: 'FamiljenGrotesk-Medium',
-    marginTop: 2,
+  productCellControl: {
+    width: '30%',
+    aspectRatio: 1,
+    backgroundColor: '#f0ede7',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9e6dc',
   },
 });
