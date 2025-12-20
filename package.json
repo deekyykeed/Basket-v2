@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^4.6.4",
     "@hugeicons/core-free-icons": "^3.0.0",
     "@hugeicons/react-native": "^1.0.9",
     "@supabase/supabase-js": "^2.86.0",
@@ -19,6 +20,8 @@
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
     "react-native": "0.81.5",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-reanimated": "^4.2.1",
     "react-native-safe-area-context": "^5.6.2",
     "react-native-svg": "^15.15.1",
     "react-native-svg-transformer": "^1.5.2",

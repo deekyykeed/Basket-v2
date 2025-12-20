@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Haptics from 'expo-haptics';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon } from './lib/icons';
+import ProductDetailsSheet from './components/ProductDetailsSheet';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +20,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   const [basketProducts, setBasketProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const bottomSheetRef = useRef(null);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
@@ -110,9 +114,14 @@ export default function App() {
     // Trigger haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
-    // TODO: Show product details bottom sheet
-    console.log('Long press on product:', product.name);
-    // For now, just log. Bottom sheet implementation will come next
+    // Set selected product and open bottom sheet
+    setSelectedProduct(product);
+    bottomSheetRef.current?.snapToIndex(0);
+  };
+
+  // Handle bottom sheet close
+  const handleBottomSheetClose = () => {
+    setSelectedProduct(null);
   };
 
   if (!fontsLoaded) {
@@ -120,9 +129,10 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
         {/* Categories */}
         <View style={styles.categoriesContainer}>
@@ -218,8 +228,17 @@ export default function App() {
             </ScrollView>
           </View>
         )}
-      </SafeAreaView>
-    </SafeAreaProvider>
+        </SafeAreaView>
+
+        {/* Product Details Bottom Sheet */}
+        <ProductDetailsSheet
+          ref={bottomSheetRef}
+          product={selectedProduct}
+          onAddToBasket={addToBasket}
+          onClose={handleBottomSheetClose}
+        />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
