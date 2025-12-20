@@ -6,13 +6,17 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
-import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon, CloseIcon } from './lib/icons';
+import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon, CloseIcon, CheckmarkIcon } from './lib/icons';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
+
+// AsyncStorage key for basket persistence
+const BASKET_STORAGE_KEY = '@basket_products';
 
 export default function App() {
   const [categories, setCategories] = useState([]);
@@ -51,6 +55,18 @@ export default function App() {
     fetchProducts();
   }, []);
 
+  // Load basket from storage on mount
+  useEffect(() => {
+    loadBasket();
+  }, []);
+
+  // Save basket whenever it changes
+  useEffect(() => {
+    if (basketProducts.length >= 0) {
+      saveBasket();
+    }
+  }, [basketProducts]);
+
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
@@ -86,6 +102,28 @@ export default function App() {
       setProducts([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load basket from AsyncStorage
+  const loadBasket = async () => {
+    try {
+      const savedBasket = await AsyncStorage.getItem(BASKET_STORAGE_KEY);
+      if (savedBasket) {
+        const parsedBasket = JSON.parse(savedBasket);
+        setBasketProducts(parsedBasket);
+      }
+    } catch (error) {
+      console.error('Error loading basket:', error);
+    }
+  };
+
+  // Save basket to AsyncStorage
+  const saveBasket = async () => {
+    try {
+      await AsyncStorage.setItem(BASKET_STORAGE_KEY, JSON.stringify(basketProducts));
+    } catch (error) {
+      console.error('Error saving basket:', error);
     }
   };
 
@@ -341,7 +379,13 @@ export default function App() {
         {basketProducts.length > 0 && (
           <View style={styles.basket}>
             <View style={styles.basketHeader}>
-              <Text style={styles.basketTitle}>Basket</Text>
+              <View style={styles.basketTitleContainer}>
+                <Text style={styles.basketTitle}>Basket</Text>
+                <View style={styles.savedIndicator}>
+                  <CheckmarkIcon size={14} color="#22c55e" strokeWidth={2} />
+                  <Text style={styles.savedText}>Saved for Friday</Text>
+                </View>
+              </View>
               <Text style={styles.basketTotal}>${calculateTotal().toFixed(2)}</Text>
             </View>
             <ScrollView
@@ -594,10 +638,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  basketTitleContainer: {
+    flexDirection: 'column',
+    gap: 4,
+  },
   basketTitle: {
     fontSize: 18,
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
+  },
+  savedIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  savedText: {
+    fontSize: 11,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#22c55e',
   },
   basketTotal: {
     fontSize: 20,
