@@ -6,7 +6,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
-import { CATEGORY_ICONS, HEADER_ICONS, EMOJI_FALLBACKS } from './lib/icons';
+import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon } from './lib/icons';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -15,6 +15,7 @@ export default function App() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('home');
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
@@ -89,19 +90,6 @@ export default function App() {
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.logo}>Basket.W</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
-              <HEADER_ICONS.profile width={20} height={20} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <HEADER_ICONS.orders width={20} height={20} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {/* Categories */}
         <View style={styles.categoriesContainer}>
           {categories.map((category) => {
@@ -110,7 +98,7 @@ export default function App() {
               <TouchableOpacity key={category.id} style={styles.categoryButton}>
                 <View style={styles.categoryIconContainer}>
                   {IconComponent ? (
-                    <IconComponent width={24} height={24} />
+                    <IconComponent size={24} color="#000" strokeWidth={1.5} />
                   ) : (
                     <Text style={{ fontSize: 24 }}>{category.icon}</Text>
                   )}
@@ -124,7 +112,8 @@ export default function App() {
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <Text style={styles.searchPlaceholder}>Search...</Text>
+            <SearchIcon size={18} color="#999" strokeWidth={1.5} />
+            <Text style={styles.searchPlaceholder}>Search products...</Text>
           </View>
         </View>
 
@@ -163,6 +152,94 @@ export default function App() {
             </View>
           )}
         </ScrollView>
+
+        {/* Bottom Control Center */}
+        <View style={styles.bottomControlCenter}>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setActiveTab('home')}
+          >
+            <BOTTOM_NAV_ICONS.home
+              size={24}
+              color={activeTab === 'home' ? '#000' : '#999'}
+              strokeWidth={activeTab === 'home' ? 2 : 1.5}
+            />
+            <Text style={[
+              styles.controlButtonText,
+              { color: activeTab === 'home' ? theme.text : '#999' }
+            ]}>
+              Home
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setActiveTab('search')}
+          >
+            <BOTTOM_NAV_ICONS.search
+              size={24}
+              color={activeTab === 'search' ? '#000' : '#999'}
+              strokeWidth={activeTab === 'search' ? 2 : 1.5}
+            />
+            <Text style={[
+              styles.controlButtonText,
+              { color: activeTab === 'search' ? theme.text : '#999' }
+            ]}>
+              Search
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setActiveTab('cart')}
+          >
+            <BOTTOM_NAV_ICONS.cart
+              size={24}
+              color={activeTab === 'cart' ? '#000' : '#999'}
+              strokeWidth={activeTab === 'cart' ? 2 : 1.5}
+            />
+            <Text style={[
+              styles.controlButtonText,
+              { color: activeTab === 'cart' ? theme.text : '#999' }
+            ]}>
+              Cart
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setActiveTab('favorites')}
+          >
+            <BOTTOM_NAV_ICONS.favorites
+              size={24}
+              color={activeTab === 'favorites' ? '#000' : '#999'}
+              strokeWidth={activeTab === 'favorites' ? 2 : 1.5}
+            />
+            <Text style={[
+              styles.controlButtonText,
+              { color: activeTab === 'favorites' ? theme.text : '#999' }
+            ]}>
+              Favorites
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setActiveTab('profile')}
+          >
+            <BOTTOM_NAV_ICONS.profile
+              size={24}
+              color={activeTab === 'profile' ? '#000' : '#999'}
+              strokeWidth={activeTab === 'profile' ? 2 : 1.5}
+            />
+            <Text style={[
+              styles.controlButtonText,
+              { color: activeTab === 'profile' ? theme.text : '#999' }
+            ]}>
+              Profile
+            </Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -173,43 +250,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fbf9f5',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  logo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  iconButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#e9e6dc',
-    overflow: 'hidden',
-    borderRadius: 20,
-    borderWidth: 0,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  iconImage: {
-    width: 20,
-    height: 20,
-  },
   categoriesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingHorizontal: 10,
-    paddingVertical: 16,
+    paddingVertical: 20,
+    paddingTop: 10,
   },
   categoryButton: {
     alignItems: 'center',
@@ -244,6 +290,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     backgroundColor: '#f0ede7',
     borderRadius: 12,
     paddingHorizontal: 16,
@@ -270,7 +319,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingBottom: 20,
+    paddingBottom: 80,
   },
   productCard: {
     width: '48%',
@@ -321,5 +370,32 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Regular',
+  },
+  bottomControlCenter: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#e9e6dc',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  controlButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  controlButtonText: {
+    fontSize: 11,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    marginTop: 2,
   },
 });
