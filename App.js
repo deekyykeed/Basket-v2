@@ -413,18 +413,18 @@ export default function App() {
         </ScrollView>
 
         {/* Basket */}
-        {basketProducts.length > 0 && (
-          <View style={styles.basket}>
-            <View style={styles.basketHeader}>
-              <View style={styles.basketTitleContainer}>
-                <Text style={styles.basketTitle}>Basket</Text>
-                <View style={styles.savedIndicator}>
-                  <CheckmarkIcon size={14} color="#22c55e" strokeWidth={2} />
-                  <Text style={styles.savedText}>Saved for Friday</Text>
-                </View>
+        <View style={styles.basket}>
+          <View style={styles.basketHeader}>
+            <View style={styles.basketTitleContainer}>
+              <Text style={styles.basketTitle}>Basket</Text>
+              <View style={styles.savedIndicator}>
+                <CheckmarkIcon size={14} color="#22c55e" strokeWidth={2} />
+                <Text style={styles.savedText}>Saved for Friday</Text>
               </View>
-              <Text style={styles.basketTotal}>${calculateTotal().toFixed(2)}</Text>
             </View>
+            <Text style={styles.basketTotal}>${calculateTotal().toFixed(2)}</Text>
+          </View>
+          {basketProducts.length > 0 ? (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -457,8 +457,12 @@ export default function App() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          </View>
-        )}
+          ) : (
+            <View style={styles.basketEmpty}>
+              <Text style={styles.basketEmptyText}>Tap products to add to your basket</Text>
+            </View>
+          )}
+        </View>
         </SafeAreaView>
 
         {/* Product Details Bottom Sheet */}
@@ -760,5 +764,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'FamiljenGrotesk-Bold',
     textAlign: 'center',
+  },
+  basketEmpty: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  basketEmptyText: {
+    fontSize: 13,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#999',
   },
 });
