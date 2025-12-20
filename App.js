@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, I
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Haptics from 'expo-haptics';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon } from './lib/icons';
@@ -16,24 +17,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const [basketProducts, setBasketProducts] = useState([
-    { id: 1 },
-    { id: 2 },
-    { id: 3 },
-    { id: 4 },
-    { id: 5 },
-    { id: 6 },
-    { id: 7 },
-    { id: 8 },
-    { id: 9 },
-    { id: 10 },
-    { id: 11 },
-    { id: 12 },
-    { id: 13 },
-    { id: 14 },
-    { id: 15 },
-  ]);
+  const [basketProducts, setBasketProducts] = useState([]);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
@@ -99,6 +83,38 @@ export default function App() {
     }
   };
 
+  // Add product to basket with haptic feedback
+  const addToBasket = (product) => {
+    // Trigger haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Check if product already exists in basket
+    const existingProductIndex = basketProducts.findIndex(p => p.id === product.id);
+
+    if (existingProductIndex !== -1) {
+      // Product exists, increase quantity
+      const updatedBasket = [...basketProducts];
+      updatedBasket[existingProductIndex] = {
+        ...updatedBasket[existingProductIndex],
+        quantity: (updatedBasket[existingProductIndex].quantity || 1) + 1
+      };
+      setBasketProducts(updatedBasket);
+    } else {
+      // New product, add to basket
+      setBasketProducts([...basketProducts, { ...product, quantity: 1 }]);
+    }
+  };
+
+  // Handle long press for product details
+  const handleProductLongPress = (product) => {
+    // Trigger haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+    // TODO: Show product details bottom sheet
+    console.log('Long press on product:', product.name);
+    // For now, just log. Bottom sheet implementation will come next
+  };
+
   if (!fontsLoaded) {
     return null;
   }
@@ -151,7 +167,13 @@ export default function App() {
             /* Product Grid */
             <View style={styles.productGrid}>
               {products.map((product) => (
-                <TouchableOpacity key={product.id} style={styles.productCard}>
+                <TouchableOpacity
+                  key={product.id}
+                  style={styles.productCard}
+                  onPress={() => addToBasket(product)}
+                  onLongPress={() => handleProductLongPress(product)}
+                  delayLongPress={500}
+                >
                   {product.quantity_label && (
                     <View style={styles.quantityBadge}>
                       <Text style={styles.quantityText}>{product.quantity_label}</Text>
@@ -172,17 +194,30 @@ export default function App() {
         </ScrollView>
 
         {/* Basket */}
-        <View style={styles.basket}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.basketScrollContent}
-          >
-            {basketProducts.map((product) => (
-              <View key={product.id} style={styles.basketProductCell} />
-            ))}
-          </ScrollView>
-        </View>
+        {basketProducts.length > 0 && (
+          <View style={styles.basket}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.basketScrollContent}
+            >
+              {basketProducts.map((product) => (
+                <View key={product.id} style={styles.basketProductCell}>
+                  <Image
+                    source={{ uri: product.image_url }}
+                    style={styles.basketProductImage}
+                    resizeMode="cover"
+                  />
+                  {product.quantity > 1 && (
+                    <View style={styles.basketQuantityBadge}>
+                      <Text style={styles.basketQuantityText}>{product.quantity}</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -339,9 +374,32 @@ const styles = StyleSheet.create({
   basketProductCell: {
     width: 100,
     height: 100,
-    backgroundColor: '#f0ede7',
+    backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#e9e6dc',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  basketProductImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+  },
+  basketQuantityBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#000',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  basketQuantityText: {
+    color: '#fff',
+    fontSize: 12,
+    fontFamily: 'FamiljenGrotesk-Bold',
   },
 });
