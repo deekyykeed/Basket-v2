@@ -173,14 +173,13 @@ export default function App() {
         {/* Bottom Control Center */}
         <View style={styles.bottomControlCenter}>
           <ScrollView
-            style={styles.scrollViewControl}
-            showsVerticalScrollIndicator={false}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.productScrollContent}
           >
-            <View style={styles.productGridControl}>
-              {selectedProducts.map((product) => (
-                <View key={product.id} style={styles.productCellControl} />
-              ))}
-            </View>
+            {selectedProducts.map((product) => (
+              <View key={product.id} style={styles.productCellControl} />
+            ))}
           </ScrollView>
         </View>
       </SafeAreaView>
@@ -316,39 +315,31 @@ const styles = StyleSheet.create({
   },
   bottomControlCenter: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    width: '100%',
-    maxHeight: '40%',
+    bottom: 14,
+    left: 14,
+    right: 14,
+    height: 140,
     backgroundColor: '#fff',
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#e9e6dc',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 20,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 25,
     zIndex: 1000,
   },
-  scrollViewControl: {
-    flex: 1,
-  },
-  productGridControl: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+  productScrollContent: {
     gap: 12,
-    flexWrap: 'wrap',
-    paddingBottom: 16,
+    paddingHorizontal: 4,
+    alignItems: 'center',
   },
   productCellControl: {
-    width: '30%',
-    aspectRatio: 1,
+    width: 100,
+    height: 100,
     backgroundColor: '#f0ede7',
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#e9e6dc',
   },
