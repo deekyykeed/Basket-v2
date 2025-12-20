@@ -16,7 +16,8 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
-  const [selectedProducts, setSelectedProducts] = useState([
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [basketProducts, setBasketProducts] = useState([
     { id: 1 },
     { id: 2 },
     { id: 3 },
@@ -170,15 +171,15 @@ export default function App() {
           )}
         </ScrollView>
 
-        {/* Bottom Control Center */}
-        <View style={styles.bottomControlCenter}>
+        {/* Basket */}
+        <View style={styles.basket}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productScrollContent}
+            contentContainerStyle={styles.basketScrollContent}
           >
-            {selectedProducts.map((product) => (
-              <View key={product.id} style={styles.productCellControl} />
+            {basketProducts.map((product) => (
+              <View key={product.id} style={styles.basketProductCell} />
             ))}
           </ScrollView>
         </View>
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Regular',
   },
-  bottomControlCenter: {
+  basket: {
     position: 'absolute',
     bottom: 14,
     left: 14,
@@ -330,12 +331,12 @@ const styles = StyleSheet.create({
     elevation: 25,
     zIndex: 1000,
   },
-  productScrollContent: {
+  basketScrollContent: {
     gap: 12,
     paddingHorizontal: 4,
     alignItems: 'center',
   },
-  productCellControl: {
+  basketProductCell: {
     width: 100,
     height: 100,
     backgroundColor: '#f0ede7',
