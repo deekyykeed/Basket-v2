@@ -366,9 +366,18 @@ export default function App() {
                     style={styles.productImage}
                     resizeMode="cover"
                   />
-                  <Text style={[styles.productPrice, { color: theme.text }]}>
-                    {parseFloat(product.price).toFixed(2)}
-                  </Text>
+                  <View style={styles.productInfo}>
+                    <Text
+                      style={[styles.productName, { color: theme.text }]}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {product.name}
+                    </Text>
+                    <Text style={[styles.productPrice, { color: theme.text }]}>
+                      ${parseFloat(product.price).toFixed(2)}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>
@@ -562,11 +571,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 8,
   },
+  productInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  productName: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#000',
+    lineHeight: 18,
+    minHeight: 36,
+  },
   productPrice: {
     fontSize: 16,
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
-    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
