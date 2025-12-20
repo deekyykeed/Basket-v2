@@ -124,6 +124,41 @@ export default function App() {
     setSelectedProduct(null);
   };
 
+  // Remove product from basket
+  const removeFromBasket = (productId) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setBasketProducts(basketProducts.filter(p => p.id !== productId));
+  };
+
+  // Decrease quantity or remove from basket
+  const decreaseQuantity = (productId) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const existingProductIndex = basketProducts.findIndex(p => p.id === productId);
+
+    if (existingProductIndex !== -1) {
+      const product = basketProducts[existingProductIndex];
+      if (product.quantity > 1) {
+        // Decrease quantity
+        const updatedBasket = [...basketProducts];
+        updatedBasket[existingProductIndex] = {
+          ...product,
+          quantity: product.quantity - 1
+        };
+        setBasketProducts(updatedBasket);
+      } else {
+        // Remove product if quantity is 1
+        removeFromBasket(productId);
+      }
+    }
+  };
+
+  // Calculate total price
+  const calculateTotal = () => {
+    return basketProducts.reduce((total, product) => {
+      return total + (parseFloat(product.price) * product.quantity);
+    }, 0);
+  };
+
   if (!fontsLoaded) {
     return null;
   }
@@ -206,13 +241,24 @@ export default function App() {
         {/* Basket */}
         {basketProducts.length > 0 && (
           <View style={styles.basket}>
+            <View style={styles.basketHeader}>
+              <Text style={styles.basketTitle}>Basket</Text>
+              <Text style={styles.basketTotal}>${calculateTotal().toFixed(2)}</Text>
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.basketScrollContent}
             >
               {basketProducts.map((product) => (
-                <View key={product.id} style={styles.basketProductCell}>
+                <TouchableOpacity
+                  key={product.id}
+                  style={styles.basketProductCell}
+                  onPress={() => decreaseQuantity(product.id)}
+                  onLongPress={() => removeFromBasket(product.id)}
+                  delayLongPress={300}
+                  activeOpacity={0.7}
+                >
                   <Image
                     source={{ uri: product.image_url }}
                     style={styles.basketProductImage}
@@ -223,7 +269,12 @@ export default function App() {
                       <Text style={styles.basketQuantityText}>{product.quantity}</Text>
                     </View>
                   )}
-                </View>
+                  <View style={styles.basketItemPrice}>
+                    <Text style={styles.basketItemPriceText}>
+                      ${(parseFloat(product.price) * product.quantity).toFixed(2)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
@@ -373,17 +424,33 @@ const styles = StyleSheet.create({
     bottom: 14,
     left: 14,
     right: 14,
-    height: 140,
     backgroundColor: '#fff',
     borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
     elevation: 25,
     zIndex: 1000,
+  },
+  basketHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  basketTitle: {
+    fontSize: 18,
+    fontFamily: 'FamiljenGrotesk-Bold',
+    color: '#000',
+  },
+  basketTotal: {
+    fontSize: 20,
+    fontFamily: 'FamiljenGrotesk-Bold',
+    color: '#000',
   },
   basketScrollContent: {
     gap: 12,
@@ -420,5 +487,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontFamily: 'FamiljenGrotesk-Bold',
+  },
+  basketItemPrice: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+    right: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  basketItemPriceText: {
+    color: '#fff',
+    fontSize: 11,
+    fontFamily: 'FamiljenGrotesk-Bold',
+    textAlign: 'center',
   },
 });
