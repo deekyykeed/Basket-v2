@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator, TextInput } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
@@ -8,7 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Haptics from 'expo-haptics';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
-import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon } from './lib/icons';
+import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon, CloseIcon } from './lib/icons';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
 
 // Keep the splash screen visible while fonts load
@@ -21,6 +21,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [basketProducts, setBasketProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const bottomSheetRef = useRef(null);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
@@ -159,6 +160,23 @@ export default function App() {
     }, 0);
   };
 
+  // Filter products based on search query
+  const filteredProducts = products.filter(product => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+    const name = product.name?.toLowerCase() || '';
+    const description = product.description?.toLowerCase() || '';
+
+    return name.includes(query) || description.includes(query);
+  });
+
+  // Clear search
+  const clearSearch = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSearchQuery('');
+  };
+
   if (!fontsLoaded) {
     return null;
   }
@@ -192,14 +210,35 @@ export default function App() {
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
             <SearchIcon size={18} color="#999" strokeWidth={1.5} />
-            <Text style={styles.searchPlaceholder}>Search products...</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search products..."
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                <CloseIcon size={18} color="#666" strokeWidth={2} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
-        {/* Fresh Finds Section */}
+        {/* Products Section */}
         <ScrollView style={styles.contentScroll} showsVerticalScrollIndicator={false}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Fresh Finds</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              {searchQuery ? `Results for "${searchQuery}"` : 'Fresh Finds'}
+            </Text>
+            {searchQuery && filteredProducts.length > 0 && (
+              <Text style={[styles.resultCount, { color: theme.text }]}>
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+              </Text>
+            )}
           </View>
 
           {/* Loading Indicator */}
@@ -208,10 +247,28 @@ export default function App() {
               <ActivityIndicator size="large" color={theme.text} />
               <Text style={[styles.loadingText, { color: theme.text }]}>Loading products...</Text>
             </View>
+          ) : filteredProducts.length === 0 ? (
+            /* Empty State */
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>🔍</Text>
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>
+                {searchQuery ? 'No products found' : 'No products available'}
+              </Text>
+              <Text style={styles.emptyMessage}>
+                {searchQuery
+                  ? `Try searching for something else`
+                  : 'Check back later for new products'}
+              </Text>
+              {searchQuery && (
+                <TouchableOpacity style={styles.clearSearchButton} onPress={clearSearch}>
+                  <Text style={styles.clearSearchText}>Clear search</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           ) : (
             /* Product Grid */
             <View style={styles.productGrid}>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <TouchableOpacity
                   key={product.id}
                   style={styles.productCard}
@@ -346,10 +403,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  searchPlaceholder: {
+  searchInput: {
+    flex: 1,
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Regular',
-    color: '#999',
+    color: '#000',
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: 4,
   },
   contentScroll: {
     flex: 1,
@@ -362,6 +424,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'FamiljenGrotesk-SemiBold',
     color: '#000',
+  },
+  resultCount: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#666',
+    marginTop: 4,
   },
   productGrid: {
     flexDirection: 'row',
@@ -418,6 +486,42 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Regular',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontFamily: 'FamiljenGrotesk-Bold',
+    color: '#000',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyMessage: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Regular',
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  clearSearchButton: {
+    backgroundColor: '#000',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  clearSearchText: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Bold',
+    color: '#fff',
   },
   basket: {
     position: 'absolute',
