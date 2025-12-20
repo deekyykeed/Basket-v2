@@ -20,6 +20,18 @@ export default function App() {
     { id: 1 },
     { id: 2 },
     { id: 3 },
+    { id: 4 },
+    { id: 5 },
+    { id: 6 },
+    { id: 7 },
+    { id: 8 },
+    { id: 9 },
+    { id: 10 },
+    { id: 11 },
+    { id: 12 },
+    { id: 13 },
+    { id: 14 },
+    { id: 15 },
   ]);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
@@ -160,11 +172,16 @@ export default function App() {
 
         {/* Bottom Control Center */}
         <View style={styles.bottomControlCenter}>
-          <View style={styles.productGridControl}>
-            {selectedProducts.map((product) => (
-              <View key={product.id} style={styles.productCellControl} />
-            ))}
-          </View>
+          <ScrollView
+            style={styles.scrollViewControl}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.productGridControl}>
+              {selectedProducts.map((product) => (
+                <View key={product.id} style={styles.productCellControl} />
+              ))}
+            </View>
+          </ScrollView>
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -303,9 +320,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     width: '100%',
+    maxHeight: '40%',
     backgroundColor: '#fff',
-    paddingVertical: 16,
+    paddingTop: 16,
     paddingHorizontal: 16,
+    paddingBottom: 8,
     borderTopWidth: 1,
     borderTopColor: '#e9e6dc',
     shadowColor: '#000',
@@ -315,11 +334,15 @@ const styles = StyleSheet.create({
     elevation: 20,
     zIndex: 1000,
   },
+  scrollViewControl: {
+    flex: 1,
+  },
   productGridControl: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
     gap: 12,
     flexWrap: 'wrap',
+    paddingBottom: 16,
   },
   productCellControl: {
     width: '30%',
