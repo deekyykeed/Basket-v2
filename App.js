@@ -22,6 +22,7 @@ export default function App() {
   const [basketProducts, setBasketProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState(null);
   const bottomSheetRef = useRef(null);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
@@ -160,16 +161,36 @@ export default function App() {
     }, 0);
   };
 
-  // Filter products based on search query
+  // Filter products based on search query and category
   const filteredProducts = products.filter(product => {
-    if (!searchQuery.trim()) return true;
+    // Category filter
+    if (activeCategory && product.category_id !== activeCategory) {
+      return false;
+    }
 
-    const query = searchQuery.toLowerCase();
-    const name = product.name?.toLowerCase() || '';
-    const description = product.description?.toLowerCase() || '';
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const name = product.name?.toLowerCase() || '';
+      const description = product.description?.toLowerCase() || '';
 
-    return name.includes(query) || description.includes(query);
+      return name.includes(query) || description.includes(query);
+    }
+
+    return true;
   });
+
+  // Handle category selection
+  const handleCategoryPress = (categoryId) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Toggle category: if already active, deactivate it (show all)
+    if (activeCategory === categoryId) {
+      setActiveCategory(null);
+    } else {
+      setActiveCategory(categoryId);
+    }
+  };
 
   // Clear search
   const clearSearch = () => {
@@ -191,16 +212,33 @@ export default function App() {
         <View style={styles.categoriesContainer}>
           {categories.map((category) => {
             const IconComponent = CATEGORY_ICONS[category.icon];
+            const isActive = activeCategory === category.id;
             return (
-              <TouchableOpacity key={category.id} style={styles.categoryButton}>
-                <View style={styles.categoryIconContainer}>
+              <TouchableOpacity
+                key={category.id}
+                style={styles.categoryButton}
+                onPress={() => handleCategoryPress(category.id)}
+                activeOpacity={0.7}
+              >
+                <View style={[
+                  styles.categoryIconContainer,
+                  isActive && styles.categoryIconContainerActive
+                ]}>
                   {IconComponent ? (
-                    <IconComponent size={24} color="#000" strokeWidth={1.5} />
+                    <IconComponent
+                      size={24}
+                      color={isActive ? '#fff' : '#000'}
+                      strokeWidth={isActive ? 2 : 1.5}
+                    />
                   ) : (
                     <Text style={{ fontSize: 24 }}>{category.icon}</Text>
                   )}
                 </View>
-                <Text style={[styles.categoryText, { color: theme.text }]}>{category.name}</Text>
+                <Text style={[
+                  styles.categoryText,
+                  { color: theme.text },
+                  isActive && styles.categoryTextActive
+                ]}>{category.name}</Text>
               </TouchableOpacity>
             );
           })}
@@ -232,9 +270,13 @@ export default function App() {
         <ScrollView style={styles.contentScroll} showsVerticalScrollIndicator={false}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {searchQuery ? `Results for "${searchQuery}"` : 'Fresh Finds'}
+              {searchQuery
+                ? `Results for "${searchQuery}"`
+                : activeCategory
+                ? categories.find(c => c.id === activeCategory)?.name || 'Products'
+                : 'Fresh Finds'}
             </Text>
-            {searchQuery && filteredProducts.length > 0 && (
+            {(searchQuery || activeCategory) && filteredProducts.length > 0 && (
               <Text style={[styles.resultCount, { color: theme.text }]}>
                 {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
               </Text>
@@ -381,6 +423,9 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
+  categoryIconContainerActive: {
+    backgroundColor: '#000',
+  },
   categoryIcon: {
     width: 24,
     height: 24,
@@ -389,6 +434,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'FamiljenGrotesk-Medium',
     color: '#000',
+  },
+  categoryTextActive: {
+    fontFamily: 'FamiljenGrotesk-Bold',
   },
   searchContainer: {
     paddingHorizontal: 20,
