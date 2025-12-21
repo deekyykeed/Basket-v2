@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { CATEGORY_ICONS, SearchIcon, CloseIcon, CheckmarkIcon, ExpandIcon } from '../lib/icons';
+import { CATEGORY_ICONS, SearchIcon, CloseIcon, CheckmarkIcon, ExpandIcon, FavoriteIcon } from '../lib/icons';
 
 const Basket = ({
   theme,
@@ -17,9 +17,11 @@ const Basket = ({
   favoriteProducts,
   onAddToBasket,
   onToggleFavorite,
+  onUpdateFrequency,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState('basket'); // 'basket' or 'favorites'
+  const [selectedProductId, setSelectedProductId] = useState(null); // For frequency selector
 
   const clearSearch = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -163,35 +165,95 @@ const Basket = ({
               contentContainerStyle={styles.basketGridContainer}
             >
               <View style={styles.basketGrid}>
-                {basketProducts.map((product) => (
-                <TouchableOpacity
-                  key={product.id}
-                  style={styles.basketGridCell}
-                  onPress={() => onDecreaseQuantity(product.id)}
-                  onLongPress={() => onRemoveFromBasket(product.id)}
-                  delayLongPress={300}
-                  activeOpacity={0.7}
-                >
-                  <Image
-                    source={{ uri: product.image_url }}
-                    style={styles.basketGridImage}
-                    resizeMode="cover"
-                  />
-                  {product.quantity > 1 && (
-                    <View style={styles.basketQuantityBadge}>
-                      <Text style={styles.basketQuantityText}>{product.quantity}</Text>
+                {basketProducts.map((product) => {
+                  const frequencyLabel = {
+                    once: 'Once',
+                    weekly: 'Weekly',
+                    biweekly: 'Bi-weekly',
+                    monthly: 'Monthly'
+                  }[product.frequency || 'once'];
+
+                  return (
+                <View key={product.id} style={styles.basketGridItem}>
+                  <TouchableOpacity
+                    style={styles.basketGridCell}
+                    onPress={() => onDecreaseQuantity(product.id)}
+                    onLongPress={() => onRemoveFromBasket(product.id)}
+                    delayLongPress={300}
+                    activeOpacity={0.7}
+                  >
+                    <Image
+                      source={{ uri: product.image_url }}
+                      style={styles.basketGridImage}
+                      resizeMode="cover"
+                    />
+                    {product.quantity > 1 && (
+                      <View style={styles.basketQuantityBadge}>
+                        <Text style={styles.basketQuantityText}>{product.quantity}</Text>
+                      </View>
+                    )}
+                    <View style={styles.basketGridInfo}>
+                      <Text style={styles.basketGridName} numberOfLines={2}>
+                        {product.name}
+                      </Text>
+                      <Text style={styles.basketGridPrice}>
+                        ${(parseFloat(product.price) * product.quantity).toFixed(2)}
+                      </Text>
                     </View>
-                  )}
-                  <View style={styles.basketGridInfo}>
-                    <Text style={styles.basketGridName} numberOfLines={2}>
-                      {product.name}
-                    </Text>
-                    <Text style={styles.basketGridPrice}>
-                      ${(parseFloat(product.price) * product.quantity).toFixed(2)}
-                    </Text>
+                  </TouchableOpacity>
+                  {/* Frequency Selector */}
+                  <View style={styles.frequencyContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.frequencyButton,
+                        product.frequency === 'once' && styles.frequencyButtonActive
+                      ]}
+                      onPress={() => onUpdateFrequency(product.id, 'once')}
+                    >
+                      <Text style={[
+                        styles.frequencyButtonText,
+                        product.frequency === 'once' && styles.frequencyButtonTextActive
+                      ]}>Once</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.frequencyButton,
+                        product.frequency === 'weekly' && styles.frequencyButtonActive
+                      ]}
+                      onPress={() => onUpdateFrequency(product.id, 'weekly')}
+                    >
+                      <Text style={[
+                        styles.frequencyButtonText,
+                        product.frequency === 'weekly' && styles.frequencyButtonTextActive
+                      ]}>Weekly</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.frequencyButton,
+                        product.frequency === 'biweekly' && styles.frequencyButtonActive
+                      ]}
+                      onPress={() => onUpdateFrequency(product.id, 'biweekly')}
+                    >
+                      <Text style={[
+                        styles.frequencyButtonText,
+                        product.frequency === 'biweekly' && styles.frequencyButtonTextActive
+                      ]}>Bi-weekly</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.frequencyButton,
+                        product.frequency === 'monthly' && styles.frequencyButtonActive
+                      ]}
+                      onPress={() => onUpdateFrequency(product.id, 'monthly')}
+                    >
+                      <Text style={[
+                        styles.frequencyButtonText,
+                        product.frequency === 'monthly' && styles.frequencyButtonTextActive
+                      ]}>Monthly</Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-              ))}
+                </View>
+              )}))}
             </View>
             </ScrollView>
           ) : (
@@ -206,7 +268,15 @@ const Basket = ({
                     <TouchableOpacity
                       key={product.id}
                       style={styles.basketGridCell}
-                      onPress={() => onAddToBasket(product)}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        onAddToBasket(product);
+                      }}
+                      onLongPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                        onToggleFavorite(product.id);
+                      }}
+                      delayLongPress={500}
                       activeOpacity={0.7}
                     >
                       <Image
@@ -214,16 +284,10 @@ const Basket = ({
                         style={styles.basketGridImage}
                         resizeMode="cover"
                       />
-                      {/* Heart icon to unfavorite */}
-                      <TouchableOpacity
-                        style={styles.favoriteIconContainer}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          onToggleFavorite(product.id);
-                        }}
-                      >
-                        <Text style={styles.favoriteIconFilled}>❤️</Text>
-                      </TouchableOpacity>
+                      {/* Heart icon indicator */}
+                      <View style={styles.favoriteIconContainer}>
+                        <FavoriteIcon size={18} color="#ef4444" strokeWidth={2} variant="solid" />
+                      </View>
                       <View style={styles.basketGridInfo}>
                         <Text style={styles.basketGridName} numberOfLines={2}>
                           {product.name}
@@ -237,10 +301,15 @@ const Basket = ({
                 </View>
               ) : (
                 <View style={styles.emptyFavoritesContainer}>
-                  <Text style={styles.emptyFavoritesIcon}>❤️</Text>
+                  <View style={styles.emptyFavoritesIconContainer}>
+                    <FavoriteIcon size={64} color="#ddd" strokeWidth={1.5} />
+                  </View>
                   <Text style={styles.emptyFavoritesText}>No favorites yet</Text>
                   <Text style={styles.emptyFavoritesSubtext}>
                     Tap the heart icon on products to save them here
+                  </Text>
+                  <Text style={styles.emptyFavoritesHint}>
+                    Tap = Add to basket • Long press = Remove
                   </Text>
                 </View>
               )}
@@ -483,8 +552,12 @@ const styles = StyleSheet.create({
     gap: 12,
     justifyContent: 'space-between',
   },
-  basketGridCell: {
+  basketGridItem: {
     width: '48%',
+    marginBottom: 16,
+  },
+  basketGridCell: {
+    width: '100%',
     backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
@@ -544,9 +617,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     zIndex: 1,
   },
-  favoriteIconFilled: {
-    fontSize: 18,
-  },
   emptyFavoritesContainer: {
     flex: 1,
     alignItems: 'center',
@@ -554,8 +624,7 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 40,
   },
-  emptyFavoritesIcon: {
-    fontSize: 64,
+  emptyFavoritesIconContainer: {
     marginBottom: 16,
     opacity: 0.3,
   },
@@ -570,6 +639,39 @@ const styles = StyleSheet.create({
     fontFamily: 'FamiljenGrotesk-Regular',
     color: '#666',
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptyFavoritesHint: {
+    fontSize: 12,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#999',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  frequencyContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  frequencyButton: {
+    flex: 1,
+    minWidth: '48%',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: '#f0ede7',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  frequencyButtonActive: {
+    backgroundColor: '#000',
+  },
+  frequencyButtonText: {
+    fontSize: 10,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#666',
+  },
+  frequencyButtonTextActive: {
+    color: '#fff',
   },
 });
 

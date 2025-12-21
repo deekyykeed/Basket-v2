@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator, TextInput, RefreshControl } from 'react-native';
-import { ProfileIcon as UserIcon } from './lib/icons';
+import { ProfileIcon as UserIcon, FavoriteIcon } from './lib/icons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
@@ -182,9 +182,22 @@ export default function App() {
       };
       setBasketProducts(updatedBasket);
     } else {
-      // New product, add to basket
-      setBasketProducts([...basketProducts, { ...product, quantity: 1 }]);
+      // New product, add to basket with default frequency
+      setBasketProducts([...basketProducts, {
+        ...product,
+        quantity: 1,
+        frequency: 'once' // once, weekly, biweekly, monthly
+      }]);
     }
+  };
+
+  // Update product frequency
+  const updateFrequency = (productId, frequency) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const updatedBasket = basketProducts.map(p =>
+      p.id === productId ? { ...p, frequency } : p
+    );
+    setBasketProducts(updatedBasket);
   };
 
   // Handle long press for product details
@@ -438,9 +451,12 @@ export default function App() {
                       handleToggleFavorite(product.id);
                     }}
                   >
-                    <Text style={styles.favoriteIconText}>
-                      {favoriteIds.includes(product.id) ? '❤️' : '🤍'}
-                    </Text>
+                    <FavoriteIcon
+                      size={20}
+                      color={favoriteIds.includes(product.id) ? '#ef4444' : '#fff'}
+                      strokeWidth={2}
+                      variant={favoriteIds.includes(product.id) ? 'solid' : 'stroke'}
+                    />
                   </TouchableOpacity>
                   <Image
                     source={{ uri: product.image_url }}
@@ -480,6 +496,7 @@ export default function App() {
           favoriteProducts={favoriteProducts}
           onAddToBasket={addToBasket}
           onToggleFavorite={handleToggleFavorite}
+          onUpdateFrequency={updateFrequency}
         />
         </SafeAreaView>
 
@@ -585,13 +602,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     padding: 6,
     borderRadius: 12,
     zIndex: 2,
-  },
-  favoriteIconText: {
-    fontSize: 16,
   },
   quantityText: {
     fontSize: 10,
