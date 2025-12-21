@@ -9,8 +9,8 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
-import { CATEGORY_ICONS, BOTTOM_NAV_ICONS, SearchIcon, CloseIcon, CheckmarkIcon } from './lib/icons';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
+import Basket from './components/Basket';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -231,12 +231,6 @@ export default function App() {
     }
   };
 
-  // Clear search
-  const clearSearch = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSearchQuery('');
-  };
-
   // Handle pull to refresh
   const onRefresh = async () => {
     setRefreshing(true);
@@ -262,64 +256,6 @@ export default function App() {
       <SafeAreaProvider>
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-
-        {/* Categories */}
-        <View style={styles.categoriesContainer}>
-          {categories.map((category) => {
-            const IconComponent = CATEGORY_ICONS[category.icon];
-            const isActive = activeCategory === category.id;
-            return (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryButton}
-                onPress={() => handleCategoryPress(category.id)}
-                activeOpacity={0.7}
-              >
-                <View style={[
-                  styles.categoryIconContainer,
-                  isActive && styles.categoryIconContainerActive
-                ]}>
-                  {IconComponent ? (
-                    <IconComponent
-                      size={24}
-                      color={isActive ? '#fff' : '#000'}
-                      strokeWidth={isActive ? 2 : 1.5}
-                    />
-                  ) : (
-                    <Text style={{ fontSize: 24 }}>{category.icon}</Text>
-                  )}
-                </View>
-                <Text style={[
-                  styles.categoryText,
-                  { color: theme.text },
-                  isActive && styles.categoryTextActive
-                ]}>{category.name}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <SearchIcon size={18} color="#999" strokeWidth={1.5} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search products..."
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="search"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-                <CloseIcon size={18} color="#666" strokeWidth={2} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
 
         {/* Products Section */}
         <ScrollView
@@ -368,7 +304,13 @@ export default function App() {
                   : 'Check back later for new products'}
               </Text>
               {searchQuery && (
-                <TouchableOpacity style={styles.clearSearchButton} onPress={clearSearch}>
+                <TouchableOpacity
+                  style={styles.clearSearchButton}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSearchQuery('');
+                  }}
+                >
                   <Text style={styles.clearSearchText}>Clear search</Text>
                 </TouchableOpacity>
               )}
@@ -412,57 +354,19 @@ export default function App() {
           )}
         </ScrollView>
 
-        {/* Basket */}
-        <View style={styles.basket}>
-          <View style={styles.basketHeader}>
-            <View style={styles.basketTitleContainer}>
-              <Text style={styles.basketTitle}>Basket</Text>
-              <View style={styles.savedIndicator}>
-                <CheckmarkIcon size={14} color="#22c55e" strokeWidth={2} />
-                <Text style={styles.savedText}>Saved for Friday</Text>
-              </View>
-            </View>
-            <Text style={styles.basketTotal}>${calculateTotal().toFixed(2)}</Text>
-          </View>
-          {basketProducts.length > 0 ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.basketScrollContent}
-            >
-              {basketProducts.map((product) => (
-                <TouchableOpacity
-                  key={product.id}
-                  style={styles.basketProductCell}
-                  onPress={() => decreaseQuantity(product.id)}
-                  onLongPress={() => removeFromBasket(product.id)}
-                  delayLongPress={300}
-                  activeOpacity={0.7}
-                >
-                  <Image
-                    source={{ uri: product.image_url }}
-                    style={styles.basketProductImage}
-                    resizeMode="cover"
-                  />
-                  {product.quantity > 1 && (
-                    <View style={styles.basketQuantityBadge}>
-                      <Text style={styles.basketQuantityText}>{product.quantity}</Text>
-                    </View>
-                  )}
-                  <View style={styles.basketItemPrice}>
-                    <Text style={styles.basketItemPriceText}>
-                      ${(parseFloat(product.price) * product.quantity).toFixed(2)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          ) : (
-            <View style={styles.basketEmpty}>
-              <Text style={styles.basketEmptyText}>Tap products to add to your basket</Text>
-            </View>
-          )}
-        </View>
+        {/* Basket Control Center */}
+        <Basket
+          theme={theme}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          categories={categories}
+          activeCategory={activeCategory}
+          onCategoryPress={handleCategoryPress}
+          basketProducts={basketProducts}
+          onDecreaseQuantity={decreaseQuantity}
+          onRemoveFromBasket={removeFromBasket}
+          totalPrice={calculateTotal()}
+        />
         </SafeAreaView>
 
         {/* Product Details Bottom Sheet */}
@@ -481,70 +385,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fbf9f5',
-  },
-  categoriesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 10,
-    paddingVertical: 20,
-    paddingTop: 10,
-  },
-  categoryButton: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  categoryIconContainer: {
-    width: 'auto',
-    height: 'auto',
-    minWidth: 'auto',
-    minHeight: 'auto',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#e9e6dc',
-    overflow: 'hidden',
-    borderRadius: 20,
-    borderWidth: 0,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  categoryIconContainerActive: {
-    backgroundColor: '#000',
-  },
-  categoryIcon: {
-    width: 24,
-    height: 24,
-  },
-  categoryText: {
-    fontSize: 12,
-    fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#000',
-  },
-  categoryTextActive: {
-    fontFamily: 'FamiljenGrotesk-Bold',
-  },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#f0ede7',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-Regular',
-    color: '#000',
-    paddingVertical: 0,
-  },
-  clearButton: {
-    padding: 4,
   },
   contentScroll: {
     flex: 1,
@@ -665,114 +505,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#fff',
-  },
-  basket: {
-    position: 'absolute',
-    bottom: 14,
-    left: 14,
-    right: 14,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 25,
-    zIndex: 1000,
-  },
-  basketHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  basketTitleContainer: {
-    flexDirection: 'column',
-    gap: 4,
-  },
-  basketTitle: {
-    fontSize: 18,
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
-  },
-  savedIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  savedText: {
-    fontSize: 11,
-    fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#22c55e',
-  },
-  basketTotal: {
-    fontSize: 20,
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
-  },
-  basketScrollContent: {
-    gap: 12,
-    paddingHorizontal: 4,
-    alignItems: 'center',
-  },
-  basketProductCell: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e9e6dc',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  basketProductImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-  },
-  basketQuantityBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: '#000',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  basketQuantityText: {
-    color: '#fff',
-    fontSize: 12,
-    fontFamily: 'FamiljenGrotesk-Bold',
-  },
-  basketItemPrice: {
-    position: 'absolute',
-    bottom: 6,
-    left: 6,
-    right: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-  },
-  basketItemPriceText: {
-    color: '#fff',
-    fontSize: 11,
-    fontFamily: 'FamiljenGrotesk-Bold',
-    textAlign: 'center',
-  },
-  basketEmpty: {
-    paddingVertical: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  basketEmptyText: {
-    fontSize: 13,
-    fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#999',
   },
 });
