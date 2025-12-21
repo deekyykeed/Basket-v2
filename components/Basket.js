@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { CATEGORY_ICONS, SearchIcon, CloseIcon, CheckmarkIcon } from '../lib/icons';
+import { CATEGORY_ICONS, SearchIcon, CloseIcon, CheckmarkIcon, ExpandIcon } from '../lib/icons';
 
 const Basket = ({
   theme,
@@ -15,13 +15,20 @@ const Basket = ({
   onRemoveFromBasket,
   totalPrice,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const clearSearch = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSearchQuery('');
   };
 
+  const toggleExpand = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <View style={styles.basket}>
+    <View style={[styles.basket, isExpanded && styles.basketExpanded]}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
@@ -96,43 +103,96 @@ const Basket = ({
             </View>
           )}
         </View>
-        <Text style={styles.basketTotal}>${totalPrice.toFixed(2)}</Text>
+        <View style={styles.basketHeaderRight}>
+          <Text style={styles.basketTotal}>${totalPrice.toFixed(2)}</Text>
+          {basketProducts.length > 0 && (
+            <TouchableOpacity onPress={toggleExpand} style={styles.expandButton}>
+              <ExpandIcon
+                size={20}
+                color="#000"
+                strokeWidth={2}
+                style={isExpanded && styles.expandIconRotated}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Basket Products or Empty State */}
       {basketProducts.length > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.basketScrollContent}
-        >
-          {basketProducts.map((product) => (
-            <TouchableOpacity
-              key={product.id}
-              style={styles.basketProductCell}
-              onPress={() => onDecreaseQuantity(product.id)}
-              onLongPress={() => onRemoveFromBasket(product.id)}
-              delayLongPress={300}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={{ uri: product.image_url }}
-                style={styles.basketProductImage}
-                resizeMode="cover"
-              />
-              {product.quantity > 1 && (
-                <View style={styles.basketQuantityBadge}>
-                  <Text style={styles.basketQuantityText}>{product.quantity}</Text>
+        isExpanded ? (
+          // Grid layout when expanded
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.basketGridContainer}
+          >
+            <View style={styles.basketGrid}>
+              {basketProducts.map((product) => (
+                <TouchableOpacity
+                  key={product.id}
+                  style={styles.basketGridCell}
+                  onPress={() => onDecreaseQuantity(product.id)}
+                  onLongPress={() => onRemoveFromBasket(product.id)}
+                  delayLongPress={300}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={{ uri: product.image_url }}
+                    style={styles.basketGridImage}
+                    resizeMode="cover"
+                  />
+                  {product.quantity > 1 && (
+                    <View style={styles.basketQuantityBadge}>
+                      <Text style={styles.basketQuantityText}>{product.quantity}</Text>
+                    </View>
+                  )}
+                  <View style={styles.basketGridInfo}>
+                    <Text style={styles.basketGridName} numberOfLines={2}>
+                      {product.name}
+                    </Text>
+                    <Text style={styles.basketGridPrice}>
+                      ${(parseFloat(product.price) * product.quantity).toFixed(2)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        ) : (
+          // Horizontal scroll when collapsed
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.basketScrollContent}
+          >
+            {basketProducts.map((product) => (
+              <TouchableOpacity
+                key={product.id}
+                style={styles.basketProductCell}
+                onPress={() => onDecreaseQuantity(product.id)}
+                onLongPress={() => onRemoveFromBasket(product.id)}
+                delayLongPress={300}
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={{ uri: product.image_url }}
+                  style={styles.basketProductImage}
+                  resizeMode="cover"
+                />
+                {product.quantity > 1 && (
+                  <View style={styles.basketQuantityBadge}>
+                    <Text style={styles.basketQuantityText}>{product.quantity}</Text>
+                  </View>
+                )}
+                <View style={styles.basketItemPrice}>
+                  <Text style={styles.basketItemPriceText}>
+                    ${(parseFloat(product.price) * product.quantity).toFixed(2)}
+                  </Text>
                 </View>
-              )}
-              <View style={styles.basketItemPrice}>
-                <Text style={styles.basketItemPriceText}>
-                  ${(parseFloat(product.price) * product.quantity).toFixed(2)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )
       ) : (
         <View style={styles.basketEmpty}>
           <Text style={styles.basketEmptyText}>Tap products to add to your basket</Text>
@@ -159,6 +219,11 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 25,
     zIndex: 1000,
+  },
+  basketExpanded: {
+    top: 60,
+    bottom: 14,
+    height: 'auto',
   },
   searchContainer: {
     marginBottom: 12,
@@ -232,6 +297,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
+  },
+  basketHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  expandButton: {
+    padding: 4,
+  },
+  expandIconRotated: {
+    transform: [{ rotate: '45deg' }],
   },
   savedIndicator: {
     flexDirection: 'row',
@@ -309,6 +385,44 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'FamiljenGrotesk-Medium',
     color: '#999',
+  },
+  basketGridContainer: {
+    paddingBottom: 12,
+  },
+  basketGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  basketGridCell: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e9e6dc',
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  basketGridImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 16,
+  },
+  basketGridInfo: {
+    padding: 12,
+    gap: 4,
+  },
+  basketGridName: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#000',
+    lineHeight: 18,
+  },
+  basketGridPrice: {
+    fontSize: 16,
+    fontFamily: 'FamiljenGrotesk-Bold',
+    color: '#000',
   },
 });
 

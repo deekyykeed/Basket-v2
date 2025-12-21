@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator, TextInput, RefreshControl } from 'react-native';
+import { ProfileIcon as UserIcon } from './lib/icons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
@@ -9,13 +10,18 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
+import { onAuthStateChange } from './lib/auth';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
 import Basket from './components/Basket';
+import AuthSheet from './components/AuthSheet';
+import Profile from './components/Profile';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
 
 // AsyncStorage key for basket persistence
+// TODO: Sync baskets to Supabase for authenticated users
+// For now, baskets are stored locally per device
 const BASKET_STORAGE_KEY = '@basket_products';
 
 export default function App() {
@@ -28,7 +34,10 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+  const [user, setUser] = useState(null);
   const bottomSheetRef = useRef(null);
+  const authSheetRef = useRef(null);
+  const profileSheetRef = useRef(null);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
@@ -59,6 +68,23 @@ export default function App() {
   // Load basket from storage on mount
   useEffect(() => {
     loadBasket();
+  }, []);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
+      setUser(session?.user || null);
+
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session.user.email);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   // Save basket whenever it changes
@@ -247,6 +273,36 @@ export default function App() {
     }
   };
 
+  // Handle auth success
+  const handleAuthSuccess = (newUser) => {
+    setUser(newUser);
+  };
+
+  // Handle sign out
+  const handleSignOut = () => {
+    setUser(null);
+  };
+
+  // Handle profile button press
+  const handleProfilePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (user) {
+      profileSheetRef.current?.snapToIndex(0);
+    } else {
+      authSheetRef.current?.snapToIndex(0);
+    }
+  };
+
+  // Handle bottom sheet close
+  const handleAuthSheetClose = () => {
+    // Nothing to do on close
+  };
+
+  // Handle profile sheet close
+  const handleProfileSheetClose = () => {
+    // Nothing to do on close
+  };
+
   if (!fontsLoaded) {
     return null;
   }
@@ -256,6 +312,12 @@ export default function App() {
       <SafeAreaProvider>
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+
+          {/* Profile Button */}
+          <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
+            <UserIcon size={24} color={theme.text} strokeWidth={2} />
+            {user && <View style={styles.profileDot} />}
+          </TouchableOpacity>
 
         {/* Products Section */}
         <ScrollView
@@ -376,6 +438,21 @@ export default function App() {
           onAddToBasket={addToBasket}
           onClose={handleBottomSheetClose}
         />
+
+        {/* Auth Sheet */}
+        <AuthSheet
+          ref={authSheetRef}
+          onAuthSuccess={handleAuthSuccess}
+          onClose={handleAuthSheetClose}
+        />
+
+        {/* Profile Sheet */}
+        <Profile
+          ref={profileSheetRef}
+          user={user}
+          onSignOut={handleSignOut}
+          onClose={handleProfileSheetClose}
+        />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -385,6 +462,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fbf9f5',
+  },
+  profileButton: {
+    position: 'absolute',
+    top: 10,
+    right: 20,
+    zIndex: 100,
+    padding: 8,
+    backgroundColor: '#f0ede7',
+    borderRadius: 20,
+  },
+  profileDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#22c55e',
+    borderWidth: 2,
+    borderColor: '#f0ede7',
   },
   contentScroll: {
     flex: 1,
