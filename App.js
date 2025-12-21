@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { onAuthStateChange } from './lib/auth';
+import { getFavorites, addFavorite, removeFavorite } from './lib/favorites';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
 import Basket from './components/Basket';
 import AuthSheet from './components/AuthSheet';
@@ -35,6 +36,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
   const [user, setUser] = useState(null);
+  const [favoriteIds, setFavoriteIds] = useState([]); // Array of product IDs
   const bottomSheetRef = useRef(null);
   const authSheetRef = useRef(null);
   const profileSheetRef = useRef(null);
@@ -77,8 +79,11 @@ export default function App() {
 
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session.user.email);
+        // Load user's favorites
+        loadFavorites(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
+        setFavoriteIds([]);
       }
     });
 
@@ -86,6 +91,12 @@ export default function App() {
       subscription?.unsubscribe();
     };
   }, []);
+
+  // Load favorites from Supabase
+  const loadFavorites = async (userId) => {
+    const { data } = await getFavorites(userId);
+    setFavoriteIds(data);
+  };
 
   // Save basket whenever it changes
   useEffect(() => {
@@ -303,6 +314,32 @@ export default function App() {
     // Nothing to do on close
   };
 
+  // Toggle favorite
+  const handleToggleFavorite = async (productId) => {
+    if (!user) {
+      // Show auth sheet if not logged in
+      authSheetRef.current?.snapToIndex(0);
+      return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const isFavorited = favoriteIds.includes(productId);
+
+    if (isFavorited) {
+      // Remove from favorites
+      setFavoriteIds(favoriteIds.filter(id => id !== productId));
+      await removeFavorite(user.id, productId);
+    } else {
+      // Add to favorites
+      setFavoriteIds([...favoriteIds, productId]);
+      await addFavorite(user.id, productId);
+    }
+  };
+
+  // Get favorite products
+  const favoriteProducts = products.filter(p => favoriteIds.includes(p.id));
+
   if (!fontsLoaded) {
     return null;
   }
@@ -393,6 +430,18 @@ export default function App() {
                       <Text style={styles.quantityText}>{product.quantity_label}</Text>
                     </View>
                   )}
+                  {/* Heart icon for favorites */}
+                  <TouchableOpacity
+                    style={styles.favoriteIcon}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleToggleFavorite(product.id);
+                    }}
+                  >
+                    <Text style={styles.favoriteIconText}>
+                      {favoriteIds.includes(product.id) ? '❤️' : '🤍'}
+                    </Text>
+                  </TouchableOpacity>
                   <Image
                     source={{ uri: product.image_url }}
                     style={styles.productImage}
@@ -428,6 +477,9 @@ export default function App() {
           onDecreaseQuantity={decreaseQuantity}
           onRemoveFromBasket={removeFromBasket}
           totalPrice={calculateTotal()}
+          favoriteProducts={favoriteProducts}
+          onAddToBasket={addToBasket}
+          onToggleFavorite={handleToggleFavorite}
         />
         </SafeAreaView>
 
@@ -528,6 +580,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     zIndex: 1,
+  },
+  favoriteIcon: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 6,
+    borderRadius: 12,
+    zIndex: 2,
+  },
+  favoriteIconText: {
+    fontSize: 16,
   },
   quantityText: {
     fontSize: 10,

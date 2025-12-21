@@ -14,8 +14,12 @@ const Basket = ({
   onDecreaseQuantity,
   onRemoveFromBasket,
   totalPrice,
+  favoriteProducts,
+  onAddToBasket,
+  onToggleFavorite,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState('basket'); // 'basket' or 'favorites'
 
   const clearSearch = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -25,6 +29,14 @@ const Basket = ({
   const toggleExpand = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsExpanded(!isExpanded);
+    if (!isExpanded) {
+      setActiveTab('basket'); // Reset to basket tab when expanding
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setActiveTab(tab);
   };
 
   return (
@@ -118,16 +130,40 @@ const Basket = ({
         </View>
       </View>
 
+      {/* Tabs (only show when expanded) */}
+      {isExpanded && (
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'basket' && styles.tabActive]}
+            onPress={() => handleTabChange('basket')}
+          >
+            <Text style={[styles.tabText, activeTab === 'basket' && styles.tabTextActive]}>
+              Basket {basketProducts.length > 0 && `(${basketProducts.length})`}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'favorites' && styles.tabActive]}
+            onPress={() => handleTabChange('favorites')}
+          >
+            <Text style={[styles.tabText, activeTab === 'favorites' && styles.tabTextActive]}>
+              Favorites {favoriteProducts?.length > 0 && `(${favoriteProducts.length})`}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Basket Products or Empty State */}
-      {basketProducts.length > 0 ? (
+      {basketProducts.length > 0 || (isExpanded && activeTab === 'favorites') ? (
         isExpanded ? (
           // Grid layout when expanded
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.basketGridContainer}
-          >
-            <View style={styles.basketGrid}>
-              {basketProducts.map((product) => (
+          activeTab === 'basket' ? (
+            // Basket Grid
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.basketGridContainer}
+            >
+              <View style={styles.basketGrid}>
+                {basketProducts.map((product) => (
                 <TouchableOpacity
                   key={product.id}
                   style={styles.basketGridCell}
@@ -157,7 +193,59 @@ const Basket = ({
                 </TouchableOpacity>
               ))}
             </View>
-          </ScrollView>
+            </ScrollView>
+          ) : (
+            // Favorites Grid
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.basketGridContainer}
+            >
+              {favoriteProducts && favoriteProducts.length > 0 ? (
+                <View style={styles.basketGrid}>
+                  {favoriteProducts.map((product) => (
+                    <TouchableOpacity
+                      key={product.id}
+                      style={styles.basketGridCell}
+                      onPress={() => onAddToBasket(product)}
+                      activeOpacity={0.7}
+                    >
+                      <Image
+                        source={{ uri: product.image_url }}
+                        style={styles.basketGridImage}
+                        resizeMode="cover"
+                      />
+                      {/* Heart icon to unfavorite */}
+                      <TouchableOpacity
+                        style={styles.favoriteIconContainer}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          onToggleFavorite(product.id);
+                        }}
+                      >
+                        <Text style={styles.favoriteIconFilled}>❤️</Text>
+                      </TouchableOpacity>
+                      <View style={styles.basketGridInfo}>
+                        <Text style={styles.basketGridName} numberOfLines={2}>
+                          {product.name}
+                        </Text>
+                        <Text style={styles.basketGridPrice}>
+                          ${parseFloat(product.price).toFixed(2)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.emptyFavoritesContainer}>
+                  <Text style={styles.emptyFavoritesIcon}>❤️</Text>
+                  <Text style={styles.emptyFavoritesText}>No favorites yet</Text>
+                  <Text style={styles.emptyFavoritesSubtext}>
+                    Tap the heart icon on products to save them here
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          )
         ) : (
           // Horizontal scroll when collapsed
           <ScrollView
@@ -423,6 +511,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#f0ede7',
+    borderRadius: 12,
+  },
+  tabActive: {
+    backgroundColor: '#000',
+  },
+  tabText: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#666',
+  },
+  tabTextActive: {
+    color: '#fff',
+  },
+  favoriteIconContainer: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 12,
+    zIndex: 1,
+  },
+  favoriteIconFilled: {
+    fontSize: 18,
+  },
+  emptyFavoritesContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyFavoritesIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+    opacity: 0.3,
+  },
+  emptyFavoritesText: {
+    fontSize: 18,
+    fontFamily: 'FamiljenGrotesk-Bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+  emptyFavoritesSubtext: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Regular',
+    color: '#666',
+    textAlign: 'center',
   },
 });
 
