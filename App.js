@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, Image, ActivityIndicator, TextInput, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, RefreshControl } from 'react-native';
 import { ProfileIcon as UserIcon } from './lib/icons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -12,6 +12,7 @@ import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { onAuthStateChange } from './lib/auth';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
+import ProductCard from './components/ProductCard';
 import Basket from './components/Basket';
 import AuthSheet from './components/AuthSheet';
 import Profile from './components/Profile';
@@ -107,13 +108,16 @@ export default function App() {
         if (error.message.includes('relation') || error.message.includes('does not exist')) {
           console.error('💡 Database tables not found! Please run supabase-setup.sql in your Supabase dashboard.');
         }
+        setCategories([]);
         throw error;
       }
-      setCategories(data || []);
+      setCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching categories:', error.message);
       // Fallback to empty array
       setCategories([]);
+      // Re-throw to propagate error to onRefresh's Promise.all catch block
+      throw error;
     }
   };
 
@@ -132,13 +136,17 @@ export default function App() {
         if (error.message.includes('relation') || error.message.includes('does not exist')) {
           console.error('💡 Database tables not found! Please run supabase-setup.sql in your Supabase dashboard.');
         }
+        setProducts([]);
+        setLoading(false);
         throw error;
       }
-      setProducts(data || []);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching products:', error.message);
       // Fallback to empty array
       setProducts([]);
+      // Re-throw to propagate error to onRefresh's Promise.all catch block
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -242,7 +250,8 @@ export default function App() {
   // Filter products based on search query and category
   const filteredProducts = useMemo(() => {
     try {
-      return (products || []).filter(product => {
+      const productList = Array.isArray(products) ? products : [];
+      return productList.filter(product => {
         // Category filter
         if (activeCategory && product.category_id !== activeCategory) {
           return false;
@@ -328,7 +337,7 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }}>
       <SafeAreaProvider>
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
@@ -400,37 +409,15 @@ export default function App() {
           ) : (
             /* Product Grid */
             <View style={styles.productGrid}>
-              {(filteredProducts || []).map((product) => (
-                <TouchableOpacity
+              {(filteredProducts || []).map((product, index) => (
+                <ProductCard
                   key={product.id}
-                  style={styles.productCard}
+                  product={product}
+                  theme={theme}
+                  index={index}
                   onPress={() => addToBasket(product)}
                   onLongPress={() => handleProductLongPress(product)}
-                  delayLongPress={500}
-                >
-                  {product.quantity_label && (
-                    <View style={styles.quantityBadge}>
-                      <Text style={styles.quantityText}>{product.quantity_label}</Text>
-                    </View>
-                  )}
-                  <Image
-                    source={{ uri: product.image_url }}
-                    style={styles.productImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.productInfo}>
-                    <Text
-                      style={[styles.productName, { color: theme.text }]}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                    >
-                      {product.name}
-                    </Text>
-                    <Text style={[styles.productPrice, { color: theme.text }]}>
-                      ${parseFloat(product.price).toFixed(2)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                />
               ))}
             </View>
           )}
@@ -481,7 +468,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fbf9f5',
   },
   profileButton: {
     position: 'absolute',
@@ -524,57 +510,8 @@ const styles = StyleSheet.create({
   productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    padding: 14,
     paddingBottom: 80,
-  },
-  productCard: {
-    width: '48%',
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  quantityBadge: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: '#fff',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    zIndex: 1,
-  },
-  quantityText: {
-    fontSize: 10,
-    fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#000',
-  },
-  productImage: {
-    width: '100%',
-    height: 120,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  productInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  productName: {
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#000',
-    lineHeight: 18,
-    minHeight: 36,
-  },
-  productPrice: {
-    fontSize: 16,
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
   },
   loadingContainer: {
     flex: 1,

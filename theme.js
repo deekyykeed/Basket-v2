@@ -1,6 +1,6 @@
 export const themes = {
   light: {
-    background: '#fbf9f5',
+    background: '#FBF9F5',
     text: '#000000',
     card: '#FDFDF7',
   },

@@ -1,13 +1,11 @@
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { CloseIcon, ProfileIcon, CheckmarkIcon } from '../lib/icons';
 import { signOut } from '../lib/auth';
+import SimpleSheet from './SimpleSheet';
 
 const Profile = forwardRef(({ user, onSignOut, onClose }, ref) => {
-  const snapPoints = useMemo(() => ['75%'], []);
-
   const handleClose = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onClose();
@@ -26,16 +24,8 @@ const Profile = forwardRef(({ user, onSignOut, onClose }, ref) => {
   const email = user.email;
 
   return (
-    <BottomSheet
-      ref={ref}
-      index={-1}
-      snapPoints={snapPoints}
-      enablePanDownToClose={true}
-      onClose={handleClose}
-      backgroundStyle={styles.bottomSheetBackground}
-      handleIndicatorStyle={styles.bottomSheetIndicator}
-    >
-      <BottomSheetView style={styles.contentContainer}>
+    <SimpleSheet ref={ref} onClose={handleClose}>
+      <View style={styles.contentContainer}>
         {/* Close Button */}
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
           <CloseIcon size={24} color="#000" strokeWidth={2} />
@@ -142,22 +132,12 @@ const Profile = forwardRef(({ user, onSignOut, onClose }, ref) => {
             <Text style={styles.signOutButtonText}>Sign Out</Text>
           </TouchableOpacity>
         </ScrollView>
-      </BottomSheetView>
-    </BottomSheet>
+      </View>
+    </SimpleSheet>
   );
 });
 
 const styles = StyleSheet.create({
-  bottomSheetBackground: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-  bottomSheetIndicator: {
-    backgroundColor: '#e9e6dc',
-    width: 40,
-    height: 4,
-  },
   contentContainer: {
     flex: 1,
     paddingHorizontal: 24,

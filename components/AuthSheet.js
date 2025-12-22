@@ -1,9 +1,9 @@
 import React, { useState, forwardRef, useMemo } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { CloseIcon } from '../lib/icons';
 import { signIn, signUp, signInWithGoogle, signInWithApple } from '../lib/auth';
+import SimpleSheet from './SimpleSheet';
 
 const AuthSheet = forwardRef(({ onAuthSuccess, onClose }, ref) => {
   const [mode, setMode] = useState('signin'); // 'signin' or 'signup'
@@ -12,8 +12,6 @@ const AuthSheet = forwardRef(({ onAuthSuccess, onClose }, ref) => {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const snapPoints = useMemo(() => ['85%'], []);
 
   const handleClose = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -106,16 +104,8 @@ const AuthSheet = forwardRef(({ onAuthSuccess, onClose }, ref) => {
   };
 
   return (
-    <BottomSheet
-      ref={ref}
-      index={-1}
-      snapPoints={snapPoints}
-      enablePanDownToClose={true}
-      onClose={handleClose}
-      backgroundStyle={styles.bottomSheetBackground}
-      handleIndicatorStyle={styles.bottomSheetIndicator}
-    >
-      <BottomSheetView style={styles.contentContainer}>
+    <SimpleSheet ref={ref} onClose={handleClose}>
+      <View style={styles.contentContainer}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -241,22 +231,12 @@ const AuthSheet = forwardRef(({ onAuthSuccess, onClose }, ref) => {
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
-      </BottomSheetView>
-    </BottomSheet>
+      </View>
+    </SimpleSheet>
   );
 });
 
 const styles = StyleSheet.create({
-  bottomSheetBackground: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-  bottomSheetIndicator: {
-    backgroundColor: '#e9e6dc',
-    width: 40,
-    height: 4,
-  },
   contentContainer: {
     flex: 1,
     paddingHorizontal: 24,

@@ -1,12 +1,11 @@
 import React, { useMemo, useState, forwardRef } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { PlusIcon, MinusIcon, CloseIcon } from '../lib/icons';
+import SimpleSheet from './SimpleSheet';
 
 const ProductDetailsSheet = forwardRef(({ product, onAddToBasket, onClose }, ref) => {
   const [quantity, setQuantity] = useState(1);
-  const snapPoints = useMemo(() => ['75%'], []);
 
   if (!product) return null;
 
@@ -33,16 +32,8 @@ const ProductDetailsSheet = forwardRef(({ product, onAddToBasket, onClose }, ref
   };
 
   return (
-    <BottomSheet
-      ref={ref}
-      index={-1}
-      snapPoints={snapPoints}
-      enablePanDownToClose={true}
-      onClose={handleClose}
-      backgroundStyle={styles.bottomSheetBackground}
-      handleIndicatorStyle={styles.bottomSheetIndicator}
-    >
-      <BottomSheetView style={styles.contentContainer}>
+    <SimpleSheet ref={ref} onClose={handleClose}>
+      <View style={styles.contentContainer}>
         {/* Close Button */}
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
           <CloseIcon size={24} color="#000" strokeWidth={2} />
@@ -114,22 +105,12 @@ const ProductDetailsSheet = forwardRef(({ product, onAddToBasket, onClose }, ref
             Add to Basket • ${(parseFloat(product.price) * quantity).toFixed(2)}
           </Text>
         </TouchableOpacity>
-      </BottomSheetView>
-    </BottomSheet>
+      </View>
+    </SimpleSheet>
   );
 });
 
 const styles = StyleSheet.create({
-  bottomSheetBackground: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-  bottomSheetIndicator: {
-    backgroundColor: '#e9e6dc',
-    width: 40,
-    height: 4,
-  },
   contentContainer: {
     flex: 1,
     paddingHorizontal: 24,

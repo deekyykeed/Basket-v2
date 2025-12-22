@@ -59,7 +59,8 @@ const Basket = ({
           contentContainerStyle={styles.categoriesScrollContent}
         >
           {(categories || []).map((category) => {
-            const IconComponent = CATEGORY_ICONS[category.icon];
+            if (!category || !category.id) return null;
+            const IconComponent = CATEGORY_ICONS[category?.icon];
             const isActive = activeCategory === category.id;
             return (
               <TouchableOpacity
@@ -79,13 +80,13 @@ const Basket = ({
                       strokeWidth={isActive ? 2 : 1.5}
                     />
                   ) : (
-                    <Text style={{ fontSize: 20 }}>{category.icon}</Text>
+                    <Text style={{ fontSize: 20 }}>{category.icon || '📦'}</Text>
                   )}
                 </View>
                 <Text style={[
                   styles.categoryText,
                   isActive && styles.categoryTextActive
-                ]}>{category.name}</Text>
+                ]}>{category.name || 'Category'}</Text>
               </TouchableOpacity>
             );
           })}
@@ -96,7 +97,7 @@ const Basket = ({
       <View style={styles.basketHeader}>
         <View style={styles.basketTitleContainer}>
           <Text style={styles.basketTitle}>Basket</Text>
-          {(basketProducts || []).length > 0 && (
+          {Array.isArray(basketProducts) && basketProducts.length > 0 && (
             <View style={styles.savedIndicator}>
               <CheckmarkIcon size={14} color="#22c55e" strokeWidth={2} />
               <Text style={styles.savedText}>Saved for Friday</Text>
@@ -105,7 +106,7 @@ const Basket = ({
         </View>
         <View style={styles.basketHeaderRight}>
           <Text style={styles.basketTotal}>${totalPrice.toFixed(2)}</Text>
-          {(basketProducts || []).length > 0 && (
+          {Array.isArray(basketProducts) && basketProducts.length > 0 && (
             <TouchableOpacity onPress={toggleExpand} style={styles.expandButton}>
               <ExpandIcon
                 size={20}
@@ -119,7 +120,7 @@ const Basket = ({
       </View>
 
       {/* Basket Products or Empty State */}
-      {(basketProducts || []).length > 0 ? (
+      {Array.isArray(basketProducts) && basketProducts.length > 0 ? (
         isExpanded ? (
           // Grid layout when expanded
           <ScrollView
@@ -127,7 +128,9 @@ const Basket = ({
             contentContainerStyle={styles.basketGridContainer}
           >
             <View style={styles.basketGrid}>
-              {(basketProducts || []).map((product) => (
+              {(basketProducts || []).map((product) => {
+                if (!product || !product.id) return null;
+                return (
                 <TouchableOpacity
                   key={product.id}
                   style={styles.basketGridCell}
@@ -155,7 +158,8 @@ const Basket = ({
                     </Text>
                   </View>
                 </TouchableOpacity>
-              ))}
+              );
+              })}
             </View>
           </ScrollView>
         ) : (
@@ -165,7 +169,9 @@ const Basket = ({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.basketScrollContent}
           >
-            {(basketProducts || []).map((product) => (
+            {(basketProducts || []).map((product) => {
+              if (!product || !product.id) return null;
+              return (
               <TouchableOpacity
                 key={product.id}
                 style={styles.basketProductCell}
@@ -190,7 +196,8 @@ const Basket = ({
                   </Text>
                 </View>
               </TouchableOpacity>
-            ))}
+              );
+            })}
           </ScrollView>
         )
       ) : (
@@ -425,5 +432,12 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
+
+// Default props to ensure arrays are always defined
+Basket.defaultProps = {
+  categories: [],
+  basketProducts: [],
+  searchQuery: '',
+};
 
 export default Basket;
