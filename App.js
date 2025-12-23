@@ -512,6 +512,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     padding: 14,
     paddingBottom: 80,
+    overflow: 'visible',
   },
   loadingContainer: {
     flex: 1,

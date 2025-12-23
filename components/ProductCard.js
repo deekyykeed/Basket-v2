@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { BlurView } from 'expo-blur';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCROLLVIEW_PADDING = 20 * 2; // 20px on each side from ScrollView (contentScroll)
@@ -32,23 +33,24 @@ const ProductCard = ({ product, theme, onPress, onLongPress, index }) => {
           <Text style={styles.quantityText}>{product.quantity_label}</Text>
         </View>
       )}
-      <Image
-        source={{ uri: product.image_url }}
-        style={styles.productImage}
-        resizeMode="cover"
-      />
-      <View style={styles.productInfo}>
-        <Text
-          style={[styles.productName, { color: theme.text }]}
-          numberOfLines={2}
-          ellipsizeMode="tail"
-        >
-          {product.name}
-        </Text>
-        <Text style={[styles.productPrice, { color: theme.text }]}>
-          ${parseFloat(product.price).toFixed(2)}
-        </Text>
+      <View style={styles.imageContainer}>
+        <View style={styles.productImageShadow}>
+          <Image
+            source={{ uri: product.image_url }}
+            style={styles.shadowImage}
+            resizeMode="cover"
+          />
+          <BlurView intensity={5} style={StyleSheet.absoluteFill} tint="light" />
+        </View>
+        <Image
+          source={{ uri: product.image_url }}
+          style={styles.productImage}
+          resizeMode="cover"
+        />
       </View>
+      <Text style={styles.productPrice}>
+        ${parseFloat(product.price).toFixed(2)}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -58,14 +60,16 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     marginRight: GAP,
     marginBottom: GAP,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    minWidth: 80,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'visible',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 10,
+    borderRadius: 0,
   },
   productCardLastInRow: {
     marginRight: 0,
@@ -85,27 +89,42 @@ const styles = StyleSheet.create({
     fontFamily: 'FamiljenGrotesk-SemiBold',
     color: '#000',
   },
+  imageContainer: {
+    width: '100%',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  productImageShadow: {
+    width: '100%',
+    aspectRatio: 1,
+    position: 'absolute',
+    top: 10,
+    opacity: 0.25,
+    zIndex: -1,
+    borderRadius: 0,
+    overflow: 'hidden',
+  },
+  shadowImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 0,
+  },
   productImage: {
     width: '100%',
-    height: 120,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  productInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  productName: {
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#000',
-    lineHeight: 18,
-    minHeight: 36,
+    aspectRatio: 1,
+    borderRadius: 0,
+    position: 'relative',
   },
   productPrice: {
-    fontSize: 16,
+    fontWeight: '700',
+    fontStyle: 'normal',
     fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
+    color: '#000000',
+    fontSize: 10,
+    letterSpacing: 0,
+    lineHeight: 1.2,
   },
 });
 
