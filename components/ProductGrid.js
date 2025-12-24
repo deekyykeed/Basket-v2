@@ -81,7 +81,6 @@ const ProductGrid = ({
 const styles = StyleSheet.create({
   contentScroll: {
     flex: 1,
-    paddingHorizontal: 20,
     overflow: 'hidden',
     width: '100%',
   },
