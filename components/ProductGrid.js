@@ -97,9 +97,7 @@ const styles = StyleSheet.create({
     paddingBottom: 90,
   },
   productCardWrapper: {
-    flex: 1,
-    minWidth: '31%',
-    maxWidth: '33%',
+    width: '32.5%',
   },
   loadingContainer: {
     flex: 1,
