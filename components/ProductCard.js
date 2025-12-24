@@ -1,19 +1,16 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SCROLLVIEW_PADDING = 20 * 2; // 20px on each side from ScrollView (contentScroll)
-const GRID_PADDING = 14 * 2; // 14px on each side from productGrid
-const GAP = 14;
-const GAPS_TOTAL = GAP * 2; // 2 gaps between 3 items
-// Calculate card width: (screen width - all padding - gaps) / 3
+const SCROLLVIEW_PADDING = 20 * 2;
+const GRID_PADDING = 0;
+const GAP = 0;
+const GAPS_TOTAL = GAP * 2;
 const CARD_WIDTH = (SCREEN_WIDTH - SCROLLVIEW_PADDING - GRID_PADDING - GAPS_TOTAL) / 3;
 
 const ProductCard = ({ product, theme, onPress, onLongPress, index }) => {
   if (!product) return null;
 
-  // Remove right margin from every 3rd item (index 2, 5, 8, etc.)
   const isLastInRow = (index + 1) % 3 === 0;
   const cardStyle = [
     styles.productCard,
@@ -34,23 +31,27 @@ const ProductCard = ({ product, theme, onPress, onLongPress, index }) => {
         </View>
       )}
       <View style={styles.imageContainer}>
-        <View style={styles.productImageShadow}>
-          <Image
-            source={{ uri: product.image_url }}
-            style={styles.shadowImage}
-            resizeMode="cover"
-          />
-          <BlurView intensity={5} style={StyleSheet.absoluteFill} tint="light" />
-        </View>
+        {/* Shadow layer with much larger offset */}
+        <Image
+          source={{ uri: product.image_url }}
+          style={styles.shadowImage}
+          resizeMode="cover"
+          blurRadius={25}
+        />
+        
+        {/* Main product image on top */}
         <Image
           source={{ uri: product.image_url }}
           style={styles.productImage}
           resizeMode="cover"
         />
       </View>
-      <Text style={styles.productPrice}>
-        ${parseFloat(product.price).toFixed(2)}
-      </Text>
+      <View style={styles.productInfo}>
+        <Text style={styles.productName}>{product.name}</Text>
+        <Text style={styles.productPrice}>
+          ${parseFloat(product.price).toFixed(2)}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -59,30 +60,38 @@ const styles = StyleSheet.create({
   productCard: {
     width: CARD_WIDTH,
     marginRight: GAP,
-    marginBottom: GAP,
+    marginBottom: 40, // Increased for shadow visibility
     minWidth: 80,
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'visible',
     padding: 0,
-    alignContent: 'center',
-    flexWrap: 'nowrap',
     gap: 10,
-    borderRadius: 0,
   },
   productCardLastInRow: {
     marginRight: 0,
   },
   quantityBadge: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: 8,
+    left: 8,
     backgroundColor: '#fff',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    zIndex: 1,
+    zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   quantityText: {
     fontSize: 10,
@@ -91,31 +100,49 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
-  },
-  productImageShadow: {
-    width: '100%',
     aspectRatio: 1,
-    position: 'absolute',
-    top: 10,
-    opacity: 0.25,
-    zIndex: -1,
-    borderRadius: 0,
-    overflow: 'hidden',
+    position: 'relative',
+    overflow: 'visible',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20, // Extra padding for shadow
   },
   shadowImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 0,
+    position: 'absolute',
+    width: '80%',
+    height: '80%',
+    top: '25%', // Pushed down significantly
+    opacity: 0.6,
+    zIndex: 0,
   },
   productImage: {
+    width: '85%',
+    height: '85%',
+    zIndex: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
+  },
+  productInfo: {
     width: '100%',
-    aspectRatio: 1,
-    borderRadius: 0,
-    position: 'relative',
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    alignItems: 'center',
+  },
+  productName: {
+    fontSize: 12,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#000000',
+    marginBottom: 4,
+    textAlign: 'center',
   },
   productPrice: {
     fontWeight: '700',
@@ -129,4 +156,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProductCard;
-

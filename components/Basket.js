@@ -1,26 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { CATEGORY_ICONS, SearchIcon, CloseIcon, CheckmarkIcon, ExpandIcon } from '../lib/icons';
+import { CheckmarkIcon, ExpandIcon } from '../lib/icons';
 
 const Basket = ({
   theme,
-  searchQuery,
-  setSearchQuery,
-  categories,
-  activeCategory,
-  onCategoryPress,
   basketProducts,
   onDecreaseQuantity,
   onRemoveFromBasket,
   totalPrice,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const clearSearch = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSearchQuery('');
-  };
 
   const toggleExpand = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -29,70 +19,6 @@ const Basket = ({
 
   return (
     <View style={[styles.basket, isExpanded && styles.basketExpanded]}>
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <SearchIcon size={18} color="#999" strokeWidth={1.5} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products..."
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-              <CloseIcon size={18} color="#666" strokeWidth={2} />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {/* Categories */}
-      <View style={styles.categoriesContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesScrollContent}
-        >
-          {(categories || []).map((category) => {
-            if (!category || !category.id) return null;
-            const IconComponent = CATEGORY_ICONS[category?.icon];
-            const isActive = activeCategory === category.id;
-            return (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryButton}
-                onPress={() => onCategoryPress(category.id)}
-                activeOpacity={0.7}
-              >
-                <View style={[
-                  styles.categoryIconContainer,
-                  isActive && styles.categoryIconContainerActive
-                ]}>
-                  {IconComponent ? (
-                    <IconComponent
-                      size={20}
-                      color={isActive ? '#fff' : '#000'}
-                      strokeWidth={isActive ? 2 : 1.5}
-                    />
-                  ) : (
-                    <Text style={{ fontSize: 20 }}>{category.icon || '📦'}</Text>
-                  )}
-                </View>
-                <Text style={[
-                  styles.categoryText,
-                  isActive && styles.categoryTextActive
-                ]}>{category.name || 'Category'}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
       {/* Basket Header */}
       <View style={styles.basketHeader}>
         <View style={styles.basketTitleContainer}>
@@ -231,64 +157,6 @@ const styles = StyleSheet.create({
     top: 60,
     bottom: 14,
     height: 'auto',
-  },
-  searchContainer: {
-    marginBottom: 12,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#f0ede7',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-Regular',
-    color: '#000',
-    paddingVertical: 0,
-  },
-  clearButton: {
-    padding: 4,
-  },
-  categoriesContainer: {
-    marginBottom: 12,
-  },
-  categoriesScrollContent: {
-    gap: 12,
-    paddingHorizontal: 4,
-  },
-  categoryButton: {
-    alignItems: 'center',
-    gap: 6,
-  },
-  categoryIconContainer: {
-    width: 'auto',
-    height: 'auto',
-    minWidth: 'auto',
-    minHeight: 'auto',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 8,
-    backgroundColor: '#e9e6dc',
-    overflow: 'hidden',
-    borderRadius: 16,
-    borderWidth: 0,
-  },
-  categoryIconContainerActive: {
-    backgroundColor: '#000',
-  },
-  categoryText: {
-    fontSize: 11,
-    fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#000',
-  },
-  categoryTextActive: {
-    fontFamily: 'FamiljenGrotesk-Bold',
   },
   basketHeader: {
     flexDirection: 'row',
@@ -435,9 +303,7 @@ const styles = StyleSheet.create({
 
 // Default props to ensure arrays are always defined
 Basket.defaultProps = {
-  categories: [],
   basketProducts: [],
-  searchQuery: '',
 };
 
 export default Basket;

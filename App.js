@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, RefreshControl } from 'react-native';
-import { ProfileIcon as UserIcon } from './lib/icons';
+import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { ProfileIcon as UserIcon, NotificationIcon } from './lib/icons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
@@ -16,6 +16,8 @@ import ProductCard from './components/ProductCard';
 import Basket from './components/Basket';
 import AuthSheet from './components/AuthSheet';
 import Profile from './components/Profile';
+import CategoryFilter from './components/CategoryFilter';
+import SearchBar from './components/SearchBar';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -25,8 +27,17 @@ SplashScreen.preventAutoHideAsync();
 // For now, baskets are stored locally per device
 const BASKET_STORAGE_KEY = '@basket_products';
 
+// Hardcoded categories
+const CATEGORIES = [
+  { id: 'produce', name: 'Produce', icon: '🥕', slug: 'produce' },
+  { id: 'restaurants', name: 'Restaurants', icon: '🍴', slug: 'restaurants' },
+  { id: 'drinks', name: 'Drinks', icon: '🍷', slug: 'drinks' },
+  { id: 'snacks', name: 'Snacks', icon: '🍿', slug: 'snacks' },
+  { id: 'retail', name: 'Retail', icon: '🏪', slug: 'retail' },
+];
+
 export default function App() {
-  const [categories, setCategories] = useState([]);
+  const [categories] = useState(CATEGORIES);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -56,10 +67,7 @@ export default function App() {
     }
   }, [fontsLoaded]);
 
-  // Fetch categories from Supabase
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+  // Categories are now hardcoded, no need to fetch
 
   // Fetch products from Supabase
   useEffect(() => {
@@ -95,31 +103,6 @@ export default function App() {
     }
   }, [basketProducts]);
 
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching categories:', error.message);
-        if (error.message.includes('relation') || error.message.includes('does not exist')) {
-          console.error('💡 Database tables not found! Please run supabase-setup.sql in your Supabase dashboard.');
-        }
-        setCategories([]);
-        throw error;
-      }
-      setCategories(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching categories:', error.message);
-      // Fallback to empty array
-      setCategories([]);
-      // Re-throw to propagate error to onRefresh's Promise.all catch block
-      throw error;
-    }
-  };
 
   const fetchProducts = async () => {
     try {
@@ -274,27 +257,12 @@ export default function App() {
     }
   }, [products, activeCategory, searchQuery]);
 
-  // Handle category selection
-  const handleCategoryPress = (categoryId) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    // Toggle category: if already active, deactivate it (show all)
-    if (activeCategory === categoryId) {
-      setActiveCategory(null);
-    } else {
-      setActiveCategory(categoryId);
-    }
-  };
-
   // Handle pull to refresh
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      // Fetch both categories and products
-      await Promise.all([
-        fetchCategories(),
-        fetchProducts()
-      ]);
+      // Fetch products only (categories are hardcoded)
+      await fetchProducts();
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
@@ -337,20 +305,47 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }}>
+    <GestureHandlerRootView style={[styles.appContainer, { backgroundColor: theme.background }]}>
       <SafeAreaProvider>
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-          {/* Profile Button */}
-          <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
-            <UserIcon size={24} color={theme.text} strokeWidth={2} />
-            {user && <View style={styles.profileDot} />}
-          </TouchableOpacity>
+          {/* Header */}
+          <View style={styles.header}>
+            {/* Top Header */}
+            <View style={styles.topHeader}>
+              {/* App Title */}
+              <Text style={[styles.appTitle, { color: theme.text }]} numberOfLines={1}>
+                Basket.Plans
+              </Text>
+              {/* Notification Icon */}
+              <TouchableOpacity style={styles.iconButton}>
+                <NotificationIcon size={24} color={theme.text} strokeWidth={1.5} />
+              </TouchableOpacity>
+              {/* Profile Button */}
+              <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
+                <UserIcon size={24} color={theme.text} strokeWidth={1.5} />
+                {user && <View style={styles.profileDot} />}
+              </TouchableOpacity>
+            </View>
+
+            {/* Section Header */}
+            <View style={styles.sectionHeaderContainer}>
+              {/* Search Bar */}
+              <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+
+              {/* Categories */}
+              <CategoryFilter
+                activeCategory={activeCategory}
+                onCategoryPress={setActiveCategory}
+              />
+            </View>
+          </View>
 
         {/* Products Section */}
         <ScrollView
           style={styles.contentScroll}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -426,11 +421,6 @@ export default function App() {
         {/* Basket Control Center */}
         <Basket
           theme={theme}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryPress={handleCategoryPress}
           basketProducts={basketProducts}
           onDecreaseQuantity={decreaseQuantity}
           onRemoveFromBasket={removeFromBasket}
@@ -466,17 +456,95 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  appContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
+  },
   container: {
     flex: 1,
+    width: '100%',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
+  },
+  header: {
+    width: '100%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
+  },
+  topHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 14,
+    paddingRight: 14,
+    paddingBottom: 0,
+    paddingLeft: 14,
+    overflow: 'visible',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 14,
+    borderRadius: 0,
+  },
+  sectionHeaderContainer: {
+    width: '100%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 14,
+    paddingRight: 0,
+    paddingBottom: 14,
+    paddingLeft: 0,
+    overflow: 'visible',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 14,
+    borderRadius: 0,
+  },
+  appTitle: {
+    flex: 1,
+    width: 1,
+    fontWeight: '600',
+    fontStyle: 'normal',
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    fontSize: 22,
+    letterSpacing: 0,
+    textAlign: 'left',
+    lineHeight: 22 * 1.2,
+  },
+  iconButton: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileButton: {
-    position: 'absolute',
-    top: 10,
-    right: 20,
-    zIndex: 100,
-    padding: 8,
-    backgroundColor: '#f0ede7',
-    borderRadius: 20,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileDot: {
     position: 'absolute',
@@ -492,6 +560,11 @@ const styles = StyleSheet.create({
   contentScroll: {
     flex: 1,
     paddingHorizontal: 20,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  scrollContent: {
+    overflow: 'hidden',
   },
   sectionHeader: {
     paddingVertical: 16,
@@ -510,8 +583,11 @@ const styles = StyleSheet.create({
   productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 14,
-    paddingBottom: 80,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 90,
+    marginHorizontal: -10,
+    marginTop: -10,
     overflow: 'visible',
   },
   loadingContainer: {

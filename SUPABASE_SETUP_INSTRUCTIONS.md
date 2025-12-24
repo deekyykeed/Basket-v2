@@ -38,7 +38,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // ← Past
 1. Go to **Table Editor** in Supabase dashboard
 2. You should see two tables:
    - ✅ `categories` (5 rows)
-   - ✅ `products` (8 rows)
+   - ✅ `products` (6 rows)
 
 ### Test a Query:
 In the SQL Editor, run:
@@ -50,7 +50,7 @@ You should see: Grocery, Restaurants, Alcohol, Express, Retail
 ```sql
 SELECT * FROM products WHERE featured = true;
 ```
-You should see 8 products (Tomato, Lettuce, Banana, etc.)
+You should see 6 products: Banana, Orange, Grapes, Lettuce, Bread, Apple
 
 ## Step 5: (Optional) Set Up Storage for Product Images
 
@@ -99,7 +99,7 @@ The app will now fetch real data from Supabase instead of using mock data!
 
 ### Products Table
 - `id` - UUID (Primary Key)
-- `name` - Product name (e.g., "Tomato")
+- `name` - Product name (e.g., "Banana")
 - `description` - Product description
 - `price` - Product price (decimal)
 - `quantity_label` - Display label (e.g., "x5", "Bunch of 5")

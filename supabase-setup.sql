@@ -80,28 +80,6 @@ ON CONFLICT (slug) DO NOTHING;
 -- ================================================
 INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
 SELECT
-  'Tomato',
-  15.88,
-  'x5',
-  'https://images.unsplash.com/photo-1546470427-e26264be0b0d?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  100,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Tomato');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
-  'Lettuce',
-  15.88,
-  NULL,
-  'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400',
-  (SELECT id FROM categories WHERE slug = 'grocery'),
-  80,
-  true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Lettuce');
-
-INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
-SELECT
   'Banana',
   15.88,
   'Bunch of 5',
@@ -113,14 +91,14 @@ WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Banana');
 
 INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
 SELECT
-  'Broccoli',
+  'Orange',
   15.88,
   NULL,
-  'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400',
+  'https://images.unsplash.com/photo-1582979512210-99b6a53386f4?w=400',
   (SELECT id FROM categories WHERE slug = 'grocery'),
-  60,
+  100,
   true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Broccoli');
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Orange');
 
 INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
 SELECT
@@ -135,25 +113,25 @@ WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Grapes');
 
 INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
 SELECT
-  'Mango',
+  'Lettuce',
   15.88,
   NULL,
-  'https://images.unsplash.com/photo-1553279768-865429fa0078?w=400',
+  'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400',
   (SELECT id FROM categories WHERE slug = 'grocery'),
-  75,
+  80,
   true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Mango');
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Lettuce');
 
 INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
 SELECT
-  'Watermelon',
+  'Bread',
   15.88,
   NULL,
-  'https://images.unsplash.com/photo-1587049352846-4a222e784210?w=400',
+  'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400',
   (SELECT id FROM categories WHERE slug = 'grocery'),
-  50,
+  60,
   true
-WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Watermelon');
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Bread');
 
 INSERT INTO products (name, price, quantity_label, image_url, category_id, stock_quantity, featured)
 SELECT
@@ -169,12 +147,15 @@ WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Apple');
 -- 7. Create Updated_at Trigger Function
 -- ================================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$;
 
 -- 8. Add Triggers to Auto-update updated_at
 -- ================================================
@@ -197,4 +178,5 @@ CREATE TRIGGER update_products_updated_at
 -- 1. Verify tables were created: Check Tables in Dashboard
 -- 2. Verify data was inserted: Run SELECT * FROM categories;
 -- 3. Test query: Run SELECT * FROM products WHERE featured = true;
+--    You should see 6 products: Banana, Orange, Grapes, Lettuce, Bread, Apple
 -- ================================================
