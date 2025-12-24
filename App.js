@@ -356,21 +356,6 @@ export default function App() {
             />
           }
         >
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {searchQuery
-                ? `Results for "${searchQuery}"`
-                : activeCategory
-                ? (categories || []).find(c => c.id === activeCategory)?.name || 'Products'
-                : 'Fresh Finds'}
-            </Text>
-            {(searchQuery || activeCategory) && filteredProducts.length > 0 && (
-              <Text style={[styles.resultCount, { color: theme.text }]}>
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-              </Text>
-            )}
-          </View>
-
           {/* Loading Indicator */}
           {loading ? (
             <View style={styles.loadingContainer}>
@@ -565,30 +550,17 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     overflow: 'hidden',
-  },
-  sectionHeader: {
-    paddingVertical: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#000',
-  },
-  resultCount: {
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#666',
-    marginTop: 4,
+    paddingTop: 10,
   },
   productGrid: {
+    width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 10,
-    paddingTop: 10,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    alignContent: 'flex-start',
     paddingBottom: 90,
-    marginHorizontal: -10,
-    marginTop: -10,
-    overflow: 'visible',
+    gap: 10,
   },
   loadingContainer: {
     flex: 1,

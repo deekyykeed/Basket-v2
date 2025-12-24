@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { MicrophoneIcon } from '../lib/icons';
+import MicIcon from '../assets/icons/search/Voice-Mail--Streamline-Plump-Remix.svg';
 
 const SearchBar = ({ value, onChangeText, placeholder = "Search..." }) => {
   return (
@@ -17,7 +17,7 @@ const SearchBar = ({ value, onChangeText, placeholder = "Search..." }) => {
           returnKeyType="search"
         />
         <TouchableOpacity style={styles.micButton}>
-          <MicrophoneIcon size={18} color="#999" strokeWidth={1.5} />
+          <MicIcon width={20} height={20} />
         </TouchableOpacity>
       </View>
     </View>
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 20,
     fontFamily: 'FamiljenGrotesk-Medium',
     fontWeight: '500',
     color: '#000',

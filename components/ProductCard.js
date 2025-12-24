@@ -2,24 +2,18 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SCROLLVIEW_PADDING = 20 * 2;
-const GRID_PADDING = 0;
-const GAP = 0;
-const GAPS_TOTAL = GAP * 2;
-const CARD_WIDTH = (SCREEN_WIDTH - SCROLLVIEW_PADDING - GRID_PADDING - GAPS_TOTAL) / 3;
+const SCROLLVIEW_PADDING = 20 * 2; // 20px padding on each side
+const GAP = 10; // Gap between items
+const NUM_COLUMNS = 3;
+// For 3 columns with 2 gaps: (screenWidth - padding - (gaps * 2)) / 3
+const CARD_WIDTH = (SCREEN_WIDTH - SCROLLVIEW_PADDING - (GAP * (NUM_COLUMNS - 1))) / NUM_COLUMNS;
 
-const ProductCard = ({ product, theme, onPress, onLongPress, index }) => {
+const ProductCard = ({ product, theme, onPress, onLongPress }) => {
   if (!product) return null;
-
-  const isLastInRow = (index + 1) % 3 === 0;
-  const cardStyle = [
-    styles.productCard,
-    isLastInRow && styles.productCardLastInRow
-  ];
 
   return (
     <TouchableOpacity
-      style={cardStyle}
+      style={styles.productCard}
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={500}
@@ -59,18 +53,14 @@ const ProductCard = ({ product, theme, onPress, onLongPress, index }) => {
 const styles = StyleSheet.create({
   productCard: {
     width: CARD_WIDTH,
-    marginRight: GAP,
-    marginBottom: 40, // Increased for shadow visibility
+    marginBottom: 30, // Extra margin for shadow visibility
     minWidth: 80,
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     overflow: 'visible',
     padding: 0,
     gap: 10,
-  },
-  productCardLastInRow: {
-    marginRight: 0,
   },
   quantityBadge: {
     position: 'absolute',
