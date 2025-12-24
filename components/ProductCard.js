@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 const ProductCard = ({ product, onPress, onLongPress }) => {
   if (!product) return null;
@@ -17,6 +17,9 @@ const ProductCard = ({ product, onPress, onLongPress }) => {
         style={styles.productImage}
         resizeMode="cover"
       />
+      <Text style={styles.productPrice}>
+        ${parseFloat(product.price).toFixed(2)}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -24,12 +27,22 @@ const ProductCard = ({ product, onPress, onLongPress }) => {
 const styles = StyleSheet.create({
   productCard: {
     width: '100%',
-    aspectRatio: 1,
+    flexDirection: 'column',
+    backgroundColor: '#fff',
+    borderRadius: 2,
+    overflow: 'hidden',
+    paddingBottom: 4,
   },
   productImage: {
     width: '100%',
-    height: '100%',
-    borderRadius: 8,
+    aspectRatio: 1,
+  },
+  productPrice: {
+    fontSize: 12,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#000',
+    marginLeft: 4,
+    textAlign: 'left',
   },
 });
 
