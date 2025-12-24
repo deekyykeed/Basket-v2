@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, useColorScheme, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { ProfileIcon as UserIcon, NotificationIcon } from './lib/icons';
+import { StyleSheet, Text, View, useColorScheme, TouchableOpacity, Image } from 'react-native';
+import { NotificationIcon } from './lib/icons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
@@ -12,12 +12,12 @@ import { themes } from './theme';
 import { supabase } from './lib/supabase';
 import { onAuthStateChange } from './lib/auth';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
-import ProductCard from './components/ProductCard';
 import Basket from './components/Basket';
 import AuthSheet from './components/AuthSheet';
 import Profile from './components/Profile';
 import CategoryFilter from './components/CategoryFilter';
 import SearchBar from './components/SearchBar';
+import ProductGrid from './components/ProductGrid';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -320,11 +320,14 @@ export default function App() {
               </Text>
               {/* Notification Icon */}
               <TouchableOpacity style={styles.iconButton}>
-                <NotificationIcon size={24} color={theme.text} strokeWidth={1.5} />
+                <NotificationIcon size={20} color={theme.text} strokeWidth={1.5} />
               </TouchableOpacity>
               {/* Profile Button */}
               <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
-                <UserIcon size={24} color={theme.text} strokeWidth={1.5} />
+                <Image
+                  source={require('./assets/images/profile/Moody Portrait with Headphones.png')}
+                  style={styles.profileImage}
+                />
                 {user && <View style={styles.profileDot} />}
               </TouchableOpacity>
             </View>
@@ -343,65 +346,17 @@ export default function App() {
           </View>
 
         {/* Products Section */}
-        <ScrollView
-          style={styles.contentScroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.text}
-              colors={[theme.text]}
-            />
-          }
-        >
-          {/* Loading Indicator */}
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.text} />
-              <Text style={[styles.loadingText, { color: theme.text }]}>Loading products...</Text>
-            </View>
-          ) : filteredProducts.length === 0 ? (
-            /* Empty State */
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>🔍</Text>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>
-                {searchQuery ? 'No products found' : 'No products available'}
-              </Text>
-              <Text style={styles.emptyMessage}>
-                {searchQuery
-                  ? `Try searching for something else`
-                  : 'Check back later for new products'}
-              </Text>
-              {searchQuery && (
-                <TouchableOpacity
-                  style={styles.clearSearchButton}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setSearchQuery('');
-                  }}
-                >
-                  <Text style={styles.clearSearchText}>Clear search</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ) : (
-            /* Product Grid */
-            <View style={styles.productGrid}>
-              {(filteredProducts || []).map((product, index) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  theme={theme}
-                  index={index}
-                  onPress={() => addToBasket(product)}
-                  onLongPress={() => handleProductLongPress(product)}
-                />
-              ))}
-            </View>
-          )}
-        </ScrollView>
+        <ProductGrid
+          theme={theme}
+          loading={loading}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          products={filteredProducts}
+          searchQuery={searchQuery}
+          onClearSearch={() => setSearchQuery('')}
+          onAddToBasket={addToBasket}
+          onProductLongPress={handleProductLongPress}
+        />
 
         {/* Basket Control Center */}
         <Basket
@@ -520,93 +475,45 @@ const styles = StyleSheet.create({
     lineHeight: 22 * 1.2,
   },
   iconButton: {
-    width: 24,
-    height: 24,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    padding: 10,
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileButton: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    elevation: 2,
   },
   profileDot: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    bottom: -1,
+    right: -1,
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#22c55e',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: '#f0ede7',
-  },
-  contentScroll: {
-    flex: 1,
-    paddingHorizontal: 20,
-    overflow: 'hidden',
-    width: '100%',
-  },
-  scrollContent: {
-    overflow: 'hidden',
-    paddingTop: 10,
-  },
-  productGrid: {
-    width: '100%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    alignContent: 'flex-start',
-    paddingBottom: 90,
-    gap: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-Regular',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptyMessage: {
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-Regular',
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  clearSearchButton: {
-    backgroundColor: '#000',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  clearSearchText: {
-    fontSize: 14,
-    fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#fff',
   },
 });
