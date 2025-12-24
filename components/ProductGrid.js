@@ -93,11 +93,13 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 2,
+    justifyContent: 'space-between',
+    rowGap: 8,
     paddingBottom: 90,
   },
   productCardWrapper: {
-    width: '32.5%',
+    width: '32%',
+    marginBottom: 0,
   },
   loadingContainer: {
     flex: 1,
