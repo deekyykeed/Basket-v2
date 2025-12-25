@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme, TouchableOpacity, Image } from 'react-native';
-import { NotificationIcon } from './lib/icons';
+import { NotificationIcon, ClockIcon, WalletIcon, UserIcon, ChevronDownIcon, MicrophoneIcon } from './lib/icons';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
@@ -402,44 +402,46 @@ function AppContent({
 
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top }]}>
-          {/* Top Header */}
+          {/* Top Header - Delivery Info */}
           <View style={styles.topHeader}>
-            {/* App Title */}
-            <Text style={[styles.appTitle, { color: theme.text }]} numberOfLines={1}>
-              Basket.Plans
-            </Text>
-            {/* Notification Icon */}
-            <TouchableOpacity style={styles.iconButton}>
-              <NotificationIcon size={20} color={theme.text} strokeWidth={1.5} />
-            </TouchableOpacity>
-            {/* Profile Button with Budget Progress */}
-            <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
-              <CircularProgress 
-                size={48} 
-                strokeWidth={3} 
-                progress={0.67}
-                progressColor="#D97655"
-                backgroundColor="rgba(0, 0, 0, 0.1)"
-              >
-                <Image
-                  source={require('./assets/images/profile/Moody Portrait with Headphones.png')}
-                  style={styles.profileImageWithProgress}
-                />
-              </CircularProgress>
-              {user && <View style={styles.profileDot} />}
-            </TouchableOpacity>
+            {/* Left Section - Delivery Info */}
+            <View style={styles.deliveryInfo}>
+              {/* Delivery Time Container */}
+              <View style={styles.deliveryTimeContainer}>
+                <View style={styles.deliveryTimeRow}>
+                  <Text style={styles.deliveryLabel}>Blinkit in</Text>
+                  <View style={styles.badge24x7}>
+                    <ClockIcon size={10} color="#333" strokeWidth={2} />
+                    <Text style={styles.badge24x7Text}>24/7</Text>
+                  </View>
+                </View>
+                <Text style={styles.deliveryTime}>13 minutes</Text>
+              </View>
+
+              {/* Location Dropdown */}
+              <TouchableOpacity style={styles.locationButton}>
+                <Text style={styles.locationText}>HOME - Floor 3, House</Text>
+                <ChevronDownIcon size={16} color="#333" strokeWidth={2} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Right Section - Icons */}
+            <View style={styles.headerIcons}>
+              {/* Wallet Icon */}
+              <TouchableOpacity style={styles.circleIconButton}>
+                <WalletIcon size={22} color="#333" strokeWidth={1.5} />
+              </TouchableOpacity>
+
+              {/* Profile Icon */}
+              <TouchableOpacity style={styles.circleIconButton} onPress={handleProfilePress}>
+                <UserIcon size={22} color="#333" strokeWidth={1.5} />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Section Header */}
-          <View style={styles.sectionHeaderContainer}>
-            {/* Search Bar */}
+          {/* Search Bar */}
+          <View style={styles.searchBarContainer}>
             <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
-
-            {/* Categories */}
-            <CategoryFilter
-              activeCategory={activeCategory}
-              onCategoryPress={setActiveCategory}
-            />
           </View>
         </View>
 
@@ -551,90 +553,83 @@ const styles = StyleSheet.create({
   topHeader: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 14,
-    paddingRight: 14,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 0,
-    paddingLeft: 14,
-    overflow: 'visible',
-    alignContent: 'center',
-    flexWrap: 'nowrap',
-    gap: 14,
-    borderRadius: 0,
   },
-  sectionHeaderContainer: {
-    width: '100%',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 14,
-    paddingRight: 0,
-    paddingBottom: 14,
-    paddingLeft: 0,
-    overflow: 'visible',
-    alignContent: 'center',
-    flexWrap: 'nowrap',
-    gap: 14,
-    borderRadius: 0,
-  },
-  appTitle: {
+  deliveryInfo: {
     flex: 1,
-    width: 1,
-    fontWeight: '600',
-    fontStyle: 'normal',
-    fontFamily: 'FamiljenGrotesk-SemiBold',
-    fontSize: 22,
-    letterSpacing: 0,
-    textAlign: 'left',
-    lineHeight: 22 * 1.2,
+    flexDirection: 'column',
+    gap: 4,
   },
-  iconButton: {
+  deliveryTimeContainer: {
+    flexDirection: 'column',
+    gap: 2,
+  },
+  deliveryTimeRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    alignContent: 'center',
-    flexWrap: 'nowrap',
-    padding: 10,
-    backgroundColor: '#ffffff',
-    overflow: 'hidden',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    gap: 8,
   },
-  profileButton: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
+  deliveryLabel: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#333',
+    fontWeight: '500',
+  },
+  deliveryTime: {
+    fontSize: 28,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#000',
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  badge24x7: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  profileImageWithProgress: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-  },
-  profileDot: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 8,
-    height: 8,
+    backgroundColor: '#FFF4E6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 4,
-    backgroundColor: '#22c55e',
-    borderWidth: 1.5,
-    borderColor: '#f0ede7',
+    gap: 3,
+  },
+  badge24x7Text: {
+    fontSize: 10,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#333',
+    fontWeight: '700',
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  locationText: {
+    fontSize: 13,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#333',
+    fontWeight: '600',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  circleIconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E8E8E8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchBarContainer: {
+    width: '100%',
+    paddingTop: 14,
+    paddingBottom: 14,
   },
   contentSection: {
     width: '100%',
