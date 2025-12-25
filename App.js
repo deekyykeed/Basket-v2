@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme, TouchableOpacity, Image } from 'react-native';
 import { NotificationIcon } from './lib/icons';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -18,6 +18,7 @@ import Profile from './components/Profile';
 import CategoryFilter from './components/CategoryFilter';
 import SearchBar from './components/SearchBar';
 import ProductGrid from './components/ProductGrid';
+import CircularProgress from './components/CircularProgress';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -54,11 +55,12 @@ export default function App() {
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
   const [fontsLoaded] = useFonts({
-    'FamiljenGrotesk-Regular': require('./assets/fonts/FamiljenGrotesk-Regular.otf'),
-    'FamiljenGrotesk-Medium': require('./assets/fonts/FamiljenGrotesk-Medium.otf'),
-    'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk-SemiBold.otf'),
-    'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk-Bold.otf'),
-    'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk-Italic.otf'),
+    'FamiljenGrotesk-Regular': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-Regular.otf'),
+    'FamiljenGrotesk-Medium': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-Medium.otf'),
+    'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-SemiBold.otf'),
+    'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-Bold.otf'),
+    'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-Italic.otf'),
+    'Fortnite': require('./assets/fonts/Fortnite.ttf'),
   });
 
   useEffect(() => {
@@ -111,7 +113,6 @@ export default function App() {
         .from('products')
         .select('*')
         .eq('is_available', true)
-        .eq('featured', true)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -157,25 +158,45 @@ export default function App() {
     }
   };
 
+  // Get bundle size from product (default to 1 if not a bundle)
+  const getBundleSize = (product) => {
+    // First check if we stored the bundle size when adding to basket
+    if (product.bundleSize && typeof product.bundleSize === 'number') {
+      return product.bundleSize;
+    }
+    // Otherwise extract from quantity_label (e.g., "x6" or "6 pack")
+    if (product.quantity_label) {
+      const match = product.quantity_label.match(/\d+/);
+      if (match) {
+        return parseInt(match[0], 10);
+      }
+    }
+    return 1;
+  };
+
   // Add product to basket with haptic feedback
   const addToBasket = (product) => {
     // Trigger haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
+    // Get bundle size (e.g., 6 for a 6-pack)
+    const bundleSize = getBundleSize(product);
+
     // Check if product already exists in basket
     const existingProductIndex = (basketProducts || []).findIndex(p => p.id === product.id);
 
     if (existingProductIndex !== -1) {
-      // Product exists, increase quantity
+      // Product exists, increase quantity by bundle size
       const updatedBasket = [...basketProducts];
       updatedBasket[existingProductIndex] = {
         ...updatedBasket[existingProductIndex],
-        quantity: (updatedBasket[existingProductIndex].quantity || 1) + 1
+        quantity: (updatedBasket[existingProductIndex].quantity || bundleSize) + bundleSize
       };
       setBasketProducts(updatedBasket);
     } else {
-      // New product, add to basket
-      setBasketProducts([...basketProducts, { ...product, quantity: 1 }]);
+      // New product, add to basket with bundle size as initial quantity
+      // Store bundleSize so we can use it for decreasing later
+      setBasketProducts([...basketProducts, { ...product, quantity: bundleSize, bundleSize: bundleSize }]);
     }
   };
 
@@ -208,12 +229,14 @@ export default function App() {
 
     if (existingProductIndex !== -1) {
       const product = currentBasket[existingProductIndex];
-      if (product.quantity > 1) {
-        // Decrease quantity
+      const bundleSize = getBundleSize(product);
+      
+      if (product.quantity > bundleSize) {
+        // Decrease quantity by bundle size
         const updatedBasket = [...currentBasket];
         updatedBasket[existingProductIndex] = {
           ...product,
-          quantity: product.quantity - 1
+          quantity: product.quantity - bundleSize
         };
         setBasketProducts(updatedBasket);
       } else {
@@ -305,93 +328,171 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={[styles.appContainer, { backgroundColor: theme.background }]}>
+    <GestureHandlerRootView style={[styles.appContainer, { backgroundColor: '#fbf9f5' }]}>
       <SafeAreaProvider>
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-
-          {/* Header */}
-          <View style={styles.header}>
-            {/* Top Header */}
-            <View style={styles.topHeader}>
-              {/* App Title */}
-              <Text style={[styles.appTitle, { color: theme.text }]} numberOfLines={1}>
-                Basket.Plans
-              </Text>
-              {/* Notification Icon */}
-              <TouchableOpacity style={styles.iconButton}>
-                <NotificationIcon size={20} color={theme.text} strokeWidth={1.5} />
-              </TouchableOpacity>
-              {/* Profile Button */}
-              <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
-                <Image
-                  source={require('./assets/images/profile/Moody Portrait with Headphones.png')}
-                  style={styles.profileImage}
-                />
-                {user && <View style={styles.profileDot} />}
-              </TouchableOpacity>
-            </View>
-
-            {/* Section Header */}
-            <View style={styles.sectionHeaderContainer}>
-              {/* Search Bar */}
-              <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
-
-              {/* Categories */}
-              <CategoryFilter
-                activeCategory={activeCategory}
-                onCategoryPress={setActiveCategory}
-              />
-            </View>
-          </View>
-
-        {/* Products Section */}
-        <ProductGrid
+        <AppContent
+          colorScheme={colorScheme}
           theme={theme}
+          user={user}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+          handleProfilePress={handleProfilePress}
           loading={loading}
           refreshing={refreshing}
           onRefresh={onRefresh}
-          products={filteredProducts}
-          searchQuery={searchQuery}
-          onClearSearch={() => setSearchQuery('')}
-          onAddToBasket={addToBasket}
-          onProductLongPress={handleProductLongPress}
+          filteredProducts={filteredProducts}
+          addToBasket={addToBasket}
+          handleProductLongPress={handleProductLongPress}
+          basketProducts={basketProducts}
+          decreaseQuantity={decreaseQuantity}
+          removeFromBasket={removeFromBasket}
+          calculateTotal={calculateTotal}
+          bottomSheetRef={bottomSheetRef}
+          selectedProduct={selectedProduct}
+          handleBottomSheetClose={handleBottomSheetClose}
+          authSheetRef={authSheetRef}
+          handleAuthSuccess={handleAuthSuccess}
+          handleAuthSheetClose={handleAuthSheetClose}
+          profileSheetRef={profileSheetRef}
+          handleSignOut={handleSignOut}
+          handleProfileSheetClose={handleProfileSheetClose}
         />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
 
-        {/* Basket Control Center */}
-        <Basket
+function AppContent({
+  colorScheme,
+  theme,
+  user,
+  searchQuery,
+  setSearchQuery,
+  activeCategory,
+  setActiveCategory,
+  handleProfilePress,
+  loading,
+  refreshing,
+  onRefresh,
+  filteredProducts,
+  addToBasket,
+  handleProductLongPress,
+  basketProducts,
+  decreaseQuantity,
+  removeFromBasket,
+  calculateTotal,
+  bottomSheetRef,
+  selectedProduct,
+  handleBottomSheetClose,
+  authSheetRef,
+  handleAuthSuccess,
+  handleAuthSheetClose,
+  profileSheetRef,
+  handleSignOut,
+  handleProfileSheetClose,
+}) {
+  const insets = useSafeAreaInsets();
+  
+  return (
+    <>
+      <View style={styles.container}>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+
+        {/* Header */}
+        <View style={[styles.header, { paddingTop: insets.top }]}>
+          {/* Top Header */}
+          <View style={styles.topHeader}>
+            {/* App Title */}
+            <Text style={[styles.appTitle, { color: theme.text }]} numberOfLines={1}>
+              Basket.Plans
+            </Text>
+            {/* Notification Icon */}
+            <TouchableOpacity style={styles.iconButton}>
+              <NotificationIcon size={20} color={theme.text} strokeWidth={1.5} />
+            </TouchableOpacity>
+            {/* Profile Button with Budget Progress */}
+            <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
+              <CircularProgress 
+                size={48} 
+                strokeWidth={3} 
+                progress={0.67}
+                progressColor="#D97655"
+                backgroundColor="rgba(0, 0, 0, 0.1)"
+              >
+                <Image
+                  source={require('./assets/images/profile/Moody Portrait with Headphones.png')}
+                  style={styles.profileImageWithProgress}
+                />
+              </CircularProgress>
+              {user && <View style={styles.profileDot} />}
+            </TouchableOpacity>
+          </View>
+
+          {/* Section Header */}
+          <View style={styles.sectionHeaderContainer}>
+            {/* Search Bar */}
+            <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+
+            {/* Categories */}
+            <CategoryFilter
+              activeCategory={activeCategory}
+              onCategoryPress={setActiveCategory}
+            />
+          </View>
+        </View>
+
+        {/* Content Section */}
+        <View style={styles.contentSection}>
+          <ProductGrid
+            theme={theme}
+            loading={loading}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            products={filteredProducts}
+            searchQuery={searchQuery}
+            onClearSearch={() => setSearchQuery('')}
+            onAddToBasket={addToBasket}
+            onProductLongPress={handleProductLongPress}
+            basketProducts={basketProducts}
+            sectionTitle="Fresh Finds"
+          />
+        </View>
+
+        {/* Basket Control Center - Hidden for now */}
+        {/* <Basket
           theme={theme}
           basketProducts={basketProducts}
           onDecreaseQuantity={decreaseQuantity}
           onRemoveFromBasket={removeFromBasket}
           totalPrice={calculateTotal()}
-        />
-        </SafeAreaView>
+        /> */}
+      </View>
 
-        {/* Product Details Bottom Sheet */}
-        <ProductDetailsSheet
-          ref={bottomSheetRef}
-          product={selectedProduct}
-          onAddToBasket={addToBasket}
-          onClose={handleBottomSheetClose}
-        />
+      {/* Product Details Bottom Sheet */}
+      <ProductDetailsSheet
+        ref={bottomSheetRef}
+        product={selectedProduct}
+        onAddToBasket={addToBasket}
+        onClose={handleBottomSheetClose}
+      />
 
-        {/* Auth Sheet */}
-        <AuthSheet
-          ref={authSheetRef}
-          onAuthSuccess={handleAuthSuccess}
-          onClose={handleAuthSheetClose}
-        />
+      {/* Auth Sheet */}
+      <AuthSheet
+        ref={authSheetRef}
+        onAuthSuccess={handleAuthSuccess}
+        onClose={handleAuthSheetClose}
+      />
 
-        {/* Profile Sheet */}
-        <Profile
-          ref={profileSheetRef}
-          user={user}
-          onSignOut={handleSignOut}
-          onClose={handleProfileSheetClose}
-        />
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+      {/* Profile Sheet */}
+      <Profile
+        ref={profileSheetRef}
+        user={user}
+        onSignOut={handleSignOut}
+        onClose={handleProfileSheetClose}
+      />
+    </>
   );
 }
 
@@ -400,7 +501,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'flex-start',
-    alignItems: 'center',
+    alignItems: 'stretch',
+    backgroundColor: '#fbf9f5',
     overflow: 'hidden',
     padding: 0,
     alignContent: 'center',
@@ -413,7 +515,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'column',
     justifyContent: 'flex-start',
-    alignItems: 'center',
+    alignItems: 'stretch',
+    backgroundColor: '#fbf9f5',
     overflow: 'hidden',
     padding: 0,
     alignContent: 'center',
@@ -426,12 +529,24 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fbf9f5',
     overflow: 'hidden',
     padding: 0,
     alignContent: 'center',
     flexWrap: 'nowrap',
     gap: 0,
     borderRadius: 0,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    borderStyle: 'solid',
+    borderTopWidth: 0,
+    borderBottomWidth: 1,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   topHeader: {
     width: '100%',
@@ -488,8 +603,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   profileButton: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -505,15 +620,34 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  profileImageWithProgress: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
   profileDot: {
     position: 'absolute',
-    bottom: -1,
-    right: -1,
+    bottom: 2,
+    right: 2,
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#22c55e',
     borderWidth: 1.5,
     borderColor: '#f0ede7',
+  },
+  contentSection: {
+    width: '100%',
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    padding: 0,
+    alignContent: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    borderRadius: 0,
   },
 });

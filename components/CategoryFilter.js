@@ -6,7 +6,7 @@ import { CATEGORY_ICONS } from '../lib/icons';
 const CATEGORIES = [
   { id: 'produce', name: 'Grocery', icon: '🥕', slug: 'produce' },
   { id: 'restaurants', name: 'Restaurants', icon: '🍴', slug: 'restaurants' },
-  { id: 'drinks', name: 'Alcohol', icon: '🍷', slug: 'drinks' },
+  { id: 'drinks', name: 'Drinks', icon: '🍷', slug: 'drinks' },
   { id: 'snacks', name: 'Express', icon: '🥫', slug: 'snacks' },
   { id: 'retail', name: 'Retail', icon: '🛍️', slug: 'retail' },
 ];
