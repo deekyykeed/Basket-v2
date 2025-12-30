@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, useColorScheme, TouchableOpacity, Image } from 'react-native';
-import { NotificationIcon } from './lib/icons';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
@@ -14,11 +13,9 @@ import { onAuthStateChange } from './lib/auth';
 import ProductDetailsSheet from './components/ProductDetailsSheet';
 import Basket from './components/Basket';
 import AuthSheet from './components/AuthSheet';
-import Profile from './components/Profile';
 import CategoryFilter from './components/CategoryFilter';
 import SearchBar from './components/SearchBar';
 import ProductGrid from './components/ProductGrid';
-import CircularProgress from './components/CircularProgress';
 
 // Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -50,7 +47,6 @@ export default function App() {
   const [user, setUser] = useState(null);
   const bottomSheetRef = useRef(null);
   const authSheetRef = useRef(null);
-  const profileSheetRef = useRef(null);
   const colorScheme = useColorScheme();
   const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
 
@@ -60,6 +56,8 @@ export default function App() {
     'FamiljenGrotesk-SemiBold': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-SemiBold.otf'),
     'FamiljenGrotesk-Bold': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-Bold.otf'),
     'FamiljenGrotesk-Italic': require('./assets/fonts/FamiljenGrotesk/FamiljenGrotesk-Italic.otf'),
+    'Rubik-Regular': require('./assets/fonts/Rubik/Rubik-VariableFont_wght.ttf'),
+    'Rubik-Italic': require('./assets/fonts/Rubik/Rubik-Italic-VariableFont_wght.ttf'),
     'Fortnite': require('./assets/fonts/Fortnite.ttf'),
   });
 
@@ -298,28 +296,8 @@ export default function App() {
     setUser(newUser);
   };
 
-  // Handle sign out
-  const handleSignOut = () => {
-    setUser(null);
-  };
-
-  // Handle profile button press
-  const handleProfilePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (user) {
-      profileSheetRef.current?.snapToIndex(0);
-    } else {
-      authSheetRef.current?.snapToIndex(0);
-    }
-  };
-
   // Handle bottom sheet close
   const handleAuthSheetClose = () => {
-    // Nothing to do on close
-  };
-
-  // Handle profile sheet close
-  const handleProfileSheetClose = () => {
     // Nothing to do on close
   };
 
@@ -338,7 +316,6 @@ export default function App() {
           setSearchQuery={setSearchQuery}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
-          handleProfilePress={handleProfilePress}
           loading={loading}
           refreshing={refreshing}
           onRefresh={onRefresh}
@@ -355,9 +332,6 @@ export default function App() {
           authSheetRef={authSheetRef}
           handleAuthSuccess={handleAuthSuccess}
           handleAuthSheetClose={handleAuthSheetClose}
-          profileSheetRef={profileSheetRef}
-          handleSignOut={handleSignOut}
-          handleProfileSheetClose={handleProfileSheetClose}
         />
       </SafeAreaProvider>
     </GestureHandlerRootView>
@@ -372,7 +346,6 @@ function AppContent({
   setSearchQuery,
   activeCategory,
   setActiveCategory,
-  handleProfilePress,
   loading,
   refreshing,
   onRefresh,
@@ -389,9 +362,6 @@ function AppContent({
   authSheetRef,
   handleAuthSuccess,
   handleAuthSheetClose,
-  profileSheetRef,
-  handleSignOut,
-  handleProfileSheetClose,
 }) {
   const insets = useSafeAreaInsets();
   
@@ -401,50 +371,23 @@ function AppContent({
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
         {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top }]}>
-          {/* Top Header */}
-          <View style={styles.topHeader}>
-            {/* App Title */}
-            <Text style={[styles.appTitle, { color: theme.text }]} numberOfLines={1}>
-              Basket.Plans
-            </Text>
-            {/* Notification Icon */}
-            <TouchableOpacity style={styles.iconButton}>
-              <NotificationIcon size={20} color={theme.text} strokeWidth={1.5} />
-            </TouchableOpacity>
-            {/* Profile Button with Budget Progress */}
-            <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
-              <CircularProgress 
-                size={48} 
-                strokeWidth={3} 
-                progress={0.67}
-                progressColor="#D97655"
-                backgroundColor="rgba(0, 0, 0, 0.1)"
-              >
-                <Image
-                  source={require('./assets/images/profile/Moody Portrait with Headphones.png')}
-                  style={styles.profileImageWithProgress}
-                />
-              </CircularProgress>
-              {user && <View style={styles.profileDot} />}
-            </TouchableOpacity>
+        <View style={[styles.header, { paddingTop: insets.top + 14 }]}>
+          {/* Main Container */}
+          <View style={styles.mainContainer}>
+            <View style={styles.searchBarWrapper}>
+              <SearchBar value={searchQuery} onChangeText={setSearchQuery} totalPrice={calculateTotal()} />
+            </View>
           </View>
 
-          {/* Section Header */}
-          <View style={styles.sectionHeaderContainer}>
-            {/* Search Bar */}
-            <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
-
-            {/* Categories */}
-            <CategoryFilter
-              activeCategory={activeCategory}
-              onCategoryPress={setActiveCategory}
-            />
-          </View>
+          {/* Categories */}
+          <CategoryFilter
+            activeCategory={activeCategory}
+            onCategoryPress={setActiveCategory}
+          />
         </View>
 
-        {/* Content Section */}
-        <View style={styles.contentSection}>
+        {/* Body */}
+        <View style={styles.body}>
           <ProductGrid
             theme={theme}
             loading={loading}
@@ -485,13 +428,6 @@ function AppContent({
         onClose={handleAuthSheetClose}
       />
 
-      {/* Profile Sheet */}
-      <Profile
-        ref={profileSheetRef}
-        user={user}
-        onSignOut={handleSignOut}
-        onClose={handleProfileSheetClose}
-      />
     </>
   );
 }
@@ -563,19 +499,56 @@ const styles = StyleSheet.create({
     gap: 14,
     borderRadius: 0,
   },
-  sectionHeaderContainer: {
+  header: {
     width: '100%',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 14,
-    paddingRight: 0,
-    paddingBottom: 14,
-    paddingLeft: 0,
+    paddingVertical: 14,
+    paddingHorizontal: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
     overflow: 'visible',
+    zIndex: 1,
+    gap: 14,
+    borderRadius: 0,
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#fbf9f5',
+  },
+  mainContainer: {
+    width: '100%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingVertical: 0,
+    overflow: 'visible',
+    gap: 6,
+  },
+  searchBarWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 0,
+    overflow: 'hidden',
+    gap: 0,
+    borderRadius: 0,
+  },
+  body: {
+    width: '100%',
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    padding: 0,
     alignContent: 'center',
     flexWrap: 'nowrap',
-    gap: 14,
+    gap: 0,
     borderRadius: 0,
   },
   appTitle: {
@@ -601,53 +574,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  profileButton: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  profileImageWithProgress: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-  },
-  profileDot: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#22c55e',
-    borderWidth: 1.5,
-    borderColor: '#f0ede7',
-  },
-  contentSection: {
-    width: '100%',
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    overflow: 'hidden',
-    padding: 0,
-    alignContent: 'center',
-    flexWrap: 'nowrap',
-    gap: 0,
-    borderRadius: 0,
   },
 });

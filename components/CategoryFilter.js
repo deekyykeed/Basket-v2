@@ -4,8 +4,8 @@ import * as Haptics from 'expo-haptics';
 import { CATEGORY_ICONS } from '../lib/icons';
 
 const CATEGORIES = [
-  { id: 'produce', name: 'Grocery', icon: '🥕', slug: 'produce' },
-  { id: 'restaurants', name: 'Restaurants', icon: '🍴', slug: 'restaurants' },
+  { id: 'produce', name: 'Farm', icon: '🥕', slug: 'produce' },
+  { id: 'restaurants', name: 'Meals', icon: '🍴', slug: 'restaurants' },
   { id: 'drinks', name: 'Drinks', icon: '🍷', slug: 'drinks' },
   { id: 'snacks', name: 'Express', icon: '🥫', slug: 'snacks' },
   { id: 'retail', name: 'Retail', icon: '🛍️', slug: 'retail' },
@@ -59,23 +59,37 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    justifyContent: 'space-evenly',
   },
   categoryButton: {
     alignItems: 'center',
     gap: 4,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    backgroundColor: '#e9e6dc',
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    width: 42,
+    height: 42,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
+    elevation: 10,
+    backgroundColor: '#fafafa',
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#ffffff',
   },
   iconContainerActive: {
     backgroundColor: '#d97655',
+    shadowColor: '#d97655',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   iconWrapper: {
     flex: 1,
@@ -100,9 +114,6 @@ const styles = StyleSheet.create({
   },
   categoryTextActive: {
     color: '#000000',
-    textShadowColor: 'rgba(0, 0, 0, 0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
 });
 
