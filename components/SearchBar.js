@@ -2,14 +2,9 @@ import React from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import MicIcon from '../assets/icons/search/Mic-Line--Streamline-Mingcute.svg';
 import SearchIconSvg from '../assets/icons/search/Search-2-Fill--Streamline-Mingcute-Fill (1).svg';
+import { formatPrice } from '../lib/basketUtils';
 
 const SearchBar = ({ value, onChangeText, placeholder = "Search...", totalPrice = 0 }) => {
-  const formatPrice = (price) => {
-    if (price >= 1000) {
-      return (price / 1000).toFixed(1) + 'k';
-    }
-    return price.toFixed(1);
-  };
 
   return (
     <View style={styles.container}>

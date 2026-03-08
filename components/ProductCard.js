@@ -1,22 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { Image, Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { getBundleSize } from '../lib/basketUtils';
 
 const ProductCard = ({ product, onPress, onLongPress, basketQuantity = 0 }) => {
   const [imageError, setImageError] = useState(false);
-  
+
   if (!product) return null;
 
   const priceNumber = Number(product?.price ?? 0);
   const safePrice = Number.isFinite(priceNumber) ? priceNumber : 0;
-  
-  // Get bundle size from product (e.g., 6 for eggs)
-  let bundleSize = 1;
-  if (product.quantity_label) {
-    const match = product.quantity_label.match(/\d+/);
-    if (match) {
-      bundleSize = parseInt(match[0], 10);
-    }
-  }
+
+  const bundleSize = getBundleSize(product);
   
   const isInBasket = basketQuantity > 0;
   
