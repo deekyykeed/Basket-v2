@@ -1,35 +1,37 @@
 import React from 'react';
-import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useBasket } from '../context/BasketContext';
+import { useTheme } from '../context/ThemeContext';
 
 const OrdersScreen = () => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { basketProducts, total } = useBasket();
+  const { theme } = useTheme();
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 14 }]}>
-      <Text style={styles.title}>Orders</Text>
+    <View style={[styles.container, { paddingTop: insets.top + 14, backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.text }]}>Orders</Text>
 
       {basketProducts.length > 0 ? (
         <View style={styles.pendingOrder}>
-          <Text style={styles.pendingLabel}>Current Basket</Text>
-          <View style={styles.orderCard}>
-            <Text style={styles.orderItemCount}>
+          <Text style={[styles.pendingLabel, { color: theme.accent }]}>Current Basket</Text>
+          <View style={[styles.orderCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Text style={[styles.orderItemCount, { color: theme.text }]}>
               {basketProducts.length} {basketProducts.length === 1 ? 'item' : 'items'}
             </Text>
-            <Text style={styles.orderTotal}>${total.toFixed(2)}</Text>
+            <Text style={[styles.orderTotal, { color: theme.text }]}>${total.toFixed(2)}</Text>
           </View>
-          <View style={styles.itemsList}>
+          <View style={[styles.itemsList, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             {basketProducts.map((product) => (
               <View key={product.id} style={styles.itemRow}>
-                <Text style={styles.itemName} numberOfLines={1}>
+                <Text style={[styles.itemName, { color: theme.text }]} numberOfLines={1}>
                   {product.name}
                 </Text>
-                <Text style={styles.itemQty}>x{product.quantity}</Text>
-                <Text style={styles.itemPrice}>
+                <Text style={[styles.itemQty, { color: theme.textSecondary }]}>x{product.quantity}</Text>
+                <Text style={[styles.itemPrice, { color: theme.text }]}>
                   ${(parseFloat(product.price) * product.quantity).toFixed(2)}
                 </Text>
               </View>
@@ -38,13 +40,12 @@ const OrdersScreen = () => {
         </View>
       ) : null}
 
-      {/* Past orders placeholder */}
       <View style={styles.emptySection}>
         <Text style={styles.emptyIcon}>📦</Text>
-        <Text style={styles.emptyTitle}>
+        <Text style={[styles.emptyTitle, { color: theme.text }]}>
           {user ? 'No past orders yet' : 'Sign in to see your orders'}
         </Text>
-        <Text style={styles.emptyMessage}>
+        <Text style={[styles.emptyMessage, { color: theme.textSecondary }]}>
           {user
             ? 'Your order history will appear here after your first delivery.'
             : 'Create an account to track deliveries and reorder favorites.'}
@@ -57,13 +58,11 @@ const OrdersScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fbf9f5',
     paddingHorizontal: 20,
   },
   title: {
     fontSize: 28,
     fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
     marginBottom: 24,
   },
   pendingOrder: {
@@ -72,7 +71,6 @@ const styles = StyleSheet.create({
   pendingLabel: {
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#d97655',
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -81,29 +79,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e9e6dc',
     marginBottom: 8,
   },
   orderItemCount: {
     fontSize: 16,
     fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#000',
   },
   orderTotal: {
     fontSize: 20,
     fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
   },
   itemsList: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e9e6dc',
     gap: 8,
   },
   itemRow: {
@@ -115,18 +107,15 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Regular',
-    color: '#000',
   },
   itemQty: {
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Medium',
-    color: '#666',
     width: 30,
   },
   itemPrice: {
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-SemiBold',
-    color: '#000',
     width: 60,
     textAlign: 'right',
   },
@@ -143,14 +132,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontFamily: 'FamiljenGrotesk-Bold',
-    color: '#000',
     textAlign: 'center',
     marginBottom: 8,
   },
   emptyMessage: {
     fontSize: 14,
     fontFamily: 'FamiljenGrotesk-Regular',
-    color: '#666',
     textAlign: 'center',
   },
 });

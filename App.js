@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { BasketProvider, useBasket } from './context/BasketContext';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import BottomTabBar from './components/BottomTabBar';
 import HomeScreen from './screens/HomeScreen';
 import OrdersScreen from './screens/OrdersScreen';
@@ -37,11 +38,13 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <AuthProvider>
-          <BasketProvider>
-            <AppShell />
-          </BasketProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <BasketProvider>
+              <AppShell />
+            </BasketProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -49,23 +52,21 @@ export default function App() {
 
 function AppShell() {
   const [activeTab, setActiveTab] = useState('home');
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const { basketProducts } = useBasket();
+  const { theme, isDark } = useTheme();
 
   return (
-    <View style={styles.root}>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <View style={[styles.root, { backgroundColor: theme.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      {/* Screen content */}
       <View style={styles.screenContainer}>
         {activeTab === 'home' && <HomeScreen />}
         {activeTab === 'orders' && <OrdersScreen />}
         {activeTab === 'profile' && <ProfileScreen />}
       </View>
 
-      {/* Bottom tab bar */}
-      <View style={{ paddingBottom: insets.bottom }}>
+      <View style={{ paddingBottom: insets.bottom, backgroundColor: theme.tabBar }}>
         <BottomTabBar
           activeTab={activeTab}
           onTabPress={setActiveTab}
@@ -79,7 +80,6 @@ function AppShell() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#fbf9f5',
   },
   screenContainer: {
     flex: 1,

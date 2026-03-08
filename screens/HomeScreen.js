@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, StyleSheet, useColorScheme } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { themes } from '../theme';
 import { supabase } from '../lib/supabase';
 import { filterProducts } from '../lib/basketUtils';
 import { useBasket } from '../context/BasketContext';
+import { useTheme } from '../context/ThemeContext';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import ProductGrid from '../components/ProductGrid';
@@ -20,8 +20,7 @@ const HomeScreen = () => {
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const bottomSheetRef = useRef(null);
-  const colorScheme = useColorScheme();
-  const theme = themes[colorScheme === 'dark' ? 'dark' : 'light'];
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
 
   const { basketProducts, addToBasket, decreaseQuantity, removeFromBasket, total } = useBasket();
@@ -77,9 +76,9 @@ const HomeScreen = () => {
 
   return (
     <>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
         {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top + 14 }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 14, backgroundColor: theme.headerBg, borderBottomColor: theme.border }]}>
           <View style={styles.searchBarWrapper}>
             <SearchBar
               value={searchQuery}
@@ -94,7 +93,7 @@ const HomeScreen = () => {
         </View>
 
         {/* Product Grid */}
-        <View style={styles.body}>
+        <View style={[styles.body, { backgroundColor: theme.surface }]}>
           <ProductGrid
             theme={theme}
             loading={loading}
@@ -134,7 +133,6 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fbf9f5',
   },
   header: {
     width: '100%',
@@ -150,8 +148,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
     gap: 14,
     borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#fbf9f5',
   },
   searchBarWrapper: {
     flexDirection: 'row',
@@ -160,7 +156,6 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
 });
 

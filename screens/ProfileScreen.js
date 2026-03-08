@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { signOut } from '../lib/auth';
 import { useAuth } from '../context/AuthContext';
 import { useBasket } from '../context/BasketContext';
+import { useTheme } from '../context/ThemeContext';
 import { CheckmarkIcon } from '../lib/icons';
 import AuthSheet from '../components/AuthSheet';
 
@@ -12,6 +13,7 @@ const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const { user, setUser } = useAuth();
   const { total } = useBasket();
+  const { theme } = useTheme();
   const authSheetRef = useRef(null);
 
   const handleSignOut = async () => {
@@ -28,12 +30,12 @@ const ProfileScreen = () => {
   if (!user) {
     return (
       <>
-        <View style={[styles.container, { paddingTop: insets.top + 14 }]}>
-          <Text style={styles.title}>Profile</Text>
+        <View style={[styles.container, { paddingTop: insets.top + 14, backgroundColor: theme.background }]}>
+          <Text style={[styles.title, { color: theme.text }]}>Profile</Text>
           <View style={styles.signedOutContainer}>
             <Text style={styles.signedOutIcon}>👤</Text>
-            <Text style={styles.signedOutTitle}>Sign in to your account</Text>
-            <Text style={styles.signedOutMessage}>
+            <Text style={[styles.signedOutTitle, { color: theme.text }]}>Sign in to your account</Text>
+            <Text style={[styles.signedOutMessage, { color: theme.textSecondary }]}>
               Save your baskets, track orders, and get personalized recommendations.
             </Text>
             <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
@@ -53,9 +55,9 @@ const ProfileScreen = () => {
   const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 14 }]}>
+    <View style={[styles.container, { paddingTop: insets.top + 14, backgroundColor: theme.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Profile</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Profile</Text>
 
         {/* Profile Header */}
         <View style={styles.profileHeader}>
@@ -114,18 +116,20 @@ const ProfileScreen = () => {
   );
 };
 
-const MenuItem = ({ icon, label }) => (
-  <TouchableOpacity
-    style={styles.menuItem}
-    onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-    activeOpacity={0.7}
-  >
+const MenuItem = ({ icon, label, comingSoon = true }) => (
+  <View style={[styles.menuItem, comingSoon && styles.menuItemDisabled]}>
     <View style={styles.menuItemLeft}>
       <Text style={styles.menuItemIcon}>{icon}</Text>
-      <Text style={styles.menuItemText}>{label}</Text>
+      <Text style={[styles.menuItemText, comingSoon && styles.menuItemTextDisabled]}>
+        {label}
+      </Text>
     </View>
-    <Text style={styles.menuItemArrow}>›</Text>
-  </TouchableOpacity>
+    {comingSoon ? (
+      <Text style={styles.comingSoonBadge}>Soon</Text>
+    ) : (
+      <Text style={styles.menuItemArrow}>›</Text>
+    )}
+  </View>
 );
 
 const styles = StyleSheet.create({
@@ -282,6 +286,22 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'FamiljenGrotesk-Regular',
     color: '#999',
+  },
+  menuItemDisabled: {
+    opacity: 0.5,
+  },
+  menuItemTextDisabled: {
+    color: '#999',
+  },
+  comingSoonBadge: {
+    fontSize: 11,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#d97655',
+    backgroundColor: '#fef3ee',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   // Sign out
   signOutButton: {

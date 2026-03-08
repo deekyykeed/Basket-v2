@@ -15,7 +15,7 @@ const SearchBar = ({ value, onChangeText, placeholder = "Search...", totalPrice 
         <TextInput
           style={styles.searchInput}
           placeholder={placeholder}
-          placeholderTextColor="hsl(0, 0.00%, 0.00%)"
+          placeholderTextColor="#999"
           value={value}
           onChangeText={onChangeText}
           autoCapitalize="none"
@@ -23,9 +23,15 @@ const SearchBar = ({ value, onChangeText, placeholder = "Search...", totalPrice 
           returnKeyType="search"
           numberOfLines={1}
         />
-        <TouchableOpacity style={styles.micButton}>
-          <MicIcon width={20} height={20} />
-        </TouchableOpacity>
+        {value ? (
+          <TouchableOpacity style={styles.micButton} onPress={() => onChangeText('')}>
+            <Text style={styles.clearText}>Clear</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.micButton}>
+            <MicIcon width={20} height={20} />
+          </View>
+        )}
       </View>
       <TouchableOpacity style={styles.basketButton}>
         <Text style={styles.basketButtonText}>
@@ -82,6 +88,11 @@ const styles = StyleSheet.create({
     padding: 0,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  clearText: {
+    fontSize: 13,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#999',
   },
   basketButton: {
     width: 40,

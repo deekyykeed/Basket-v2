@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { HomeIcon, CartIcon } from '../lib/icons';
+import { HomeIcon } from '../lib/icons';
+import { useTheme } from '../context/ThemeContext';
 
 const TABS = [
   { id: 'home', label: 'Shop', Icon: HomeIcon },
@@ -10,13 +11,15 @@ const TABS = [
 ];
 
 const BottomTabBar = ({ activeTab, onTabPress, basketCount }) => {
+  const { theme } = useTheme();
+
   const handlePress = (tabId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onTabPress(tabId);
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.tabBar, borderTopColor: theme.border }]}>
       {TABS.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -30,7 +33,7 @@ const BottomTabBar = ({ activeTab, onTabPress, basketCount }) => {
               {tab.Icon ? (
                 <tab.Icon
                   size={20}
-                  color={isActive ? '#fff' : 'rgba(0,0,0,0.4)'}
+                  color={isActive ? '#fff' : theme.textMuted}
                   strokeWidth={isActive ? 2 : 1.5}
                 />
               ) : (
@@ -39,12 +42,12 @@ const BottomTabBar = ({ activeTab, onTabPress, basketCount }) => {
                 </Text>
               )}
               {tab.id === 'orders' && basketCount > 0 && (
-                <View style={styles.badge}>
+                <View style={[styles.badge, { borderColor: theme.tabBar }]}>
                   <Text style={styles.badgeText}>{basketCount > 9 ? '9+' : basketCount}</Text>
                 </View>
               )}
             </View>
-            <Text style={[styles.label, isActive && styles.labelActive]}>
+            <Text style={[styles.label, { color: theme.textMuted }, isActive && { color: theme.text, fontFamily: 'FamiljenGrotesk-Bold' }]}>
               {tab.label}
             </Text>
           </TouchableOpacity>
@@ -59,11 +62,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#fbf9f5',
     paddingTop: 8,
     paddingBottom: 4,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.08)',
   },
   tab: {
     alignItems: 'center',
@@ -91,11 +92,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 11,
     fontFamily: 'FamiljenGrotesk-Medium',
-    color: 'rgba(0,0,0,0.4)',
-  },
-  labelActive: {
-    color: '#000',
-    fontFamily: 'FamiljenGrotesk-Bold',
   },
   badge: {
     position: 'absolute',
@@ -109,7 +105,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 4,
     borderWidth: 2,
-    borderColor: '#fbf9f5',
   },
   badgeText: {
     color: '#fff',

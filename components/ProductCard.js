@@ -58,17 +58,15 @@ const ProductCard = ({ product, onPress, onLongPress, basketQuantity = 0 }) => {
             }}
             style={styles.productImage}
             resizeMode="cover"
-            onError={(error) => {
-              console.error('Image load error for product:', product.name);
-              console.error('Image URL:', product.image_url);
-              console.error('Error details:', error.nativeEvent?.error || 'Unknown error');
-              setImageError(true);
-            }}
+            onError={() => setImageError(true)}
             onLoadStart={() => setImageError(false)}
           />
         ) : (
           <View style={[styles.productImage, styles.placeholderImage]}>
             <Text style={styles.placeholderText}>📦</Text>
+            <Text style={styles.placeholderName} numberOfLines={2}>
+              {product.name}
+            </Text>
           </View>
         )}
         <Text style={styles.discountLabel}>{randomPercentage}</Text>
@@ -138,9 +136,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 4,
   },
   placeholderText: {
-    fontSize: 48,
+    fontSize: 36,
+  },
+  placeholderName: {
+    fontSize: 11,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#999',
+    textAlign: 'center',
+    paddingHorizontal: 8,
   },
 });
 
