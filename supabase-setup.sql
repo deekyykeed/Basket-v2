@@ -252,6 +252,116 @@ INSERT INTO categories (name, slug, icon, display_order) VALUES
   ('Retail', 'retail', '🛍️', 5)
 ON CONFLICT (slug) DO NOTHING;
 
+-- 12. User Events Table (behavior tracking)
+-- ================================================
+CREATE TABLE IF NOT EXISTS user_events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  event_type VARCHAR(30) NOT NULL, -- 'search', 'product_view', 'cart_add', 'cart_remove', 'category_browse', 'purchase'
+  event_data JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_events_user ON user_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_events_type ON user_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_user_events_created ON user_events(created_at);
+
+-- 13. Orders Table
+-- ================================================
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  total DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'confirmed', 'delivered'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+
+-- 14. Order Items Table
+-- ================================================
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID REFERENCES orders(id) ON DELETE CASCADE NOT NULL,
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  price_at_purchase DECIMAL(10, 2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product ON order_items(product_id);
+
+-- 15. User Memory Table (AI-generated preference profile)
+-- ================================================
+CREATE TABLE IF NOT EXISTS user_memory (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  preferences JSONB DEFAULT '{}',
+  raw_summary TEXT,
+  last_analyzed_at TIMESTAMP WITH TIME ZONE,
+  event_count_at_analysis INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_memory_user ON user_memory(user_id);
+
+-- 16. RLS for new tables
+-- ================================================
+ALTER TABLE user_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_memory ENABLE ROW LEVEL SECURITY;
+
+-- User events: users can only read/write their own
+DROP POLICY IF EXISTS "Users manage own events" ON user_events;
+CREATE POLICY "Users manage own events"
+  ON user_events FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- Orders: users can only read/write their own
+DROP POLICY IF EXISTS "Users manage own orders" ON orders;
+CREATE POLICY "Users manage own orders"
+  ON orders FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- Order items: users access via order ownership
+DROP POLICY IF EXISTS "Users read own order items" ON order_items;
+CREATE POLICY "Users read own order items"
+  ON order_items FOR SELECT
+  USING (order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Users insert own order items" ON order_items;
+CREATE POLICY "Users insert own order items"
+  ON order_items FOR INSERT
+  WITH CHECK (order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()));
+
+-- User memory: users can only read/write their own
+DROP POLICY IF EXISTS "Users manage own memory" ON user_memory;
+CREATE POLICY "Users manage own memory"
+  ON user_memory FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- 17. Triggers for new tables
+-- ================================================
+DROP TRIGGER IF EXISTS update_orders_updated_at ON orders;
+CREATE TRIGGER update_orders_updated_at
+  BEFORE UPDATE ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_user_memory_updated_at ON user_memory;
+CREATE TRIGGER update_user_memory_updated_at
+  BEFORE UPDATE ON user_memory
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 -- ================================================
 -- SCHEMA READY
 -- ================================================

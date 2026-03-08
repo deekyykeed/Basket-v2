@@ -1,16 +1,20 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { filterProducts } from '../lib/basketUtils';
 import { useBasket } from '../context/BasketContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import ProductGrid from '../components/ProductGrid';
 import ProductDetailsSheet from '../components/ProductDetailsSheet';
 import Basket from '../components/Basket';
 import * as Haptics from 'expo-haptics';
+import { trackSearch, trackProductView, trackCategoryBrowse, flushEvents } from '../lib/events';
+import { aiSearch } from '../lib/search';
+import { useMemory } from '../context/MemoryContext';
 
 const HomeScreen = () => {
   const [products, setProducts] = useState([]);
@@ -19,8 +23,15 @@ const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [aiSearchResults, setAiSearchResults] = useState(null);
+  const [aiSearchLoading, setAiSearchLoading] = useState(false);
+  const [isAiSearch, setIsAiSearch] = useState(false);
   const bottomSheetRef = useRef(null);
+  const searchTimerRef = useRef(null);
+  const productViewTimerRef = useRef(null);
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const { memory } = useMemory();
   const insets = useSafeAreaInsets();
 
   const { basketProducts, addToBasket, decreaseQuantity, removeFromBasket, total } = useBasket();
@@ -53,9 +64,69 @@ const HomeScreen = () => {
   };
 
   const filteredProducts = useMemo(
-    () => filterProducts(products, searchQuery, activeCategory),
-    [products, searchQuery, activeCategory]
+    () => aiSearchResults || filterProducts(products, searchQuery, activeCategory),
+    [products, searchQuery, activeCategory, aiSearchResults]
   );
+
+  // Debounced search tracking + AI search
+  const handleSearchChange = useCallback((query) => {
+    setSearchQuery(query);
+
+    // Clear any pending search timer
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+
+    if (!query?.trim()) {
+      setAiSearchResults(null);
+      setIsAiSearch(false);
+      return;
+    }
+
+    // Debounce: track and run AI search after 800ms of no typing
+    searchTimerRef.current = setTimeout(async () => {
+      const results = filterProducts(products, query, activeCategory);
+      trackSearch(query, results.length);
+
+      // If query looks natural language (3+ words), trigger AI search
+      const wordCount = query.trim().split(/\s+/).length;
+      if (wordCount >= 3 && user && memory) {
+        setAiSearchLoading(true);
+        setIsAiSearch(true);
+        try {
+          const aiResults = await aiSearch(query, products, memory);
+          if (aiResults) {
+            setAiSearchResults(aiResults.products);
+          }
+        } catch (err) {
+          console.error('AI search error:', err);
+        } finally {
+          setAiSearchLoading(false);
+        }
+      } else {
+        setAiSearchResults(null);
+        setIsAiSearch(false);
+      }
+    }, 800);
+  }, [products, activeCategory, user, memory]);
+
+  // Track category browsing
+  const handleCategoryPress = useCallback((categoryId) => {
+    setActiveCategory((prev) => {
+      const newCategory = prev === categoryId ? null : categoryId;
+      if (newCategory) {
+        trackCategoryBrowse({ id: newCategory, name: categoryId });
+      }
+      return newCategory;
+    });
+    setAiSearchResults(null);
+    setIsAiSearch(false);
+  }, []);
+
+  // Flush events when app goes to background
+  useEffect(() => {
+    return () => flushEvents();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -71,7 +142,17 @@ const HomeScreen = () => {
   const handleProductLongPress = (product) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setSelectedProduct(product);
+    productViewTimerRef.current = Date.now();
     bottomSheetRef.current?.snapToIndex(0);
+  };
+
+  const handleProductDetailClose = () => {
+    if (selectedProduct && productViewTimerRef.current) {
+      const duration = Date.now() - productViewTimerRef.current;
+      trackProductView(selectedProduct, duration);
+      productViewTimerRef.current = null;
+    }
+    setSelectedProduct(null);
   };
 
   return (
@@ -82,13 +163,15 @@ const HomeScreen = () => {
           <View style={styles.searchBarWrapper}>
             <SearchBar
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={handleSearchChange}
               totalPrice={total}
+              isAiSearch={isAiSearch}
+              aiSearchLoading={aiSearchLoading}
             />
           </View>
           <CategoryFilter
             activeCategory={activeCategory}
-            onCategoryPress={setActiveCategory}
+            onCategoryPress={handleCategoryPress}
           />
         </View>
 
@@ -101,7 +184,7 @@ const HomeScreen = () => {
             onRefresh={onRefresh}
             products={filteredProducts}
             searchQuery={searchQuery}
-            onClearSearch={() => setSearchQuery('')}
+            onClearSearch={() => { setSearchQuery(''); setAiSearchResults(null); setIsAiSearch(false); }}
             onAddToBasket={addToBasket}
             onProductLongPress={handleProductLongPress}
             basketProducts={basketProducts}
@@ -124,7 +207,7 @@ const HomeScreen = () => {
         ref={bottomSheetRef}
         product={selectedProduct}
         onAddToBasket={addToBasket}
-        onClose={() => setSelectedProduct(null)}
+        onClose={handleProductDetailClose}
       />
     </>
   );

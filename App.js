@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { BasketProvider, useBasket } from './context/BasketContext';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { MemoryProvider } from './context/MemoryContext';
 import BottomTabBar from './components/BottomTabBar';
 import HomeScreen from './screens/HomeScreen';
 import OrdersScreen from './screens/OrdersScreen';
@@ -41,7 +42,9 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <BasketProvider>
-              <AppShell />
+              <MemoryProvider>
+                <AppShell />
+              </MemoryProvider>
             </BasketProvider>
           </AuthProvider>
         </ThemeProvider>

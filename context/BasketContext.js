@@ -7,6 +7,7 @@ import {
   removeProduct,
   calculateTotal,
 } from '../lib/basketUtils';
+import { trackCartAdd, trackCartRemove } from '../lib/events';
 
 const BASKET_STORAGE_KEY = '@basket_products';
 
@@ -44,16 +45,31 @@ export const BasketProvider = ({ children }) => {
 
   const addToBasket = (product) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setBasketProducts(prev => addProductToBasket(prev, product));
+    setBasketProducts(prev => {
+      const next = addProductToBasket(prev, product);
+      const item = next.find(p => p.id === product.id);
+      trackCartAdd(product, item?.quantity || 1);
+      return next;
+    });
   };
 
   const decreaseQuantity = (productId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setBasketProducts(prev => decreaseProductQuantity(prev, productId));
+    setBasketProducts(prev => {
+      const next = decreaseProductQuantity(prev, productId);
+      const removed = !next.find(p => p.id === productId);
+      if (removed) {
+        const product = prev.find(p => p.id === productId);
+        if (product) trackCartRemove(product);
+      }
+      return next;
+    });
   };
 
   const removeFromBasket = (productId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const product = basketProducts.find(p => p.id === productId);
+    if (product) trackCartRemove(product);
     setBasketProducts(prev => removeProduct(prev, productId));
   };
 

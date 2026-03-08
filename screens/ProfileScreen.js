@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { signOut } from '../lib/auth';
 import { useAuth } from '../context/AuthContext';
 import { useBasket } from '../context/BasketContext';
 import { useTheme } from '../context/ThemeContext';
+import { useMemory } from '../context/MemoryContext';
 import { CheckmarkIcon } from '../lib/icons';
 import AuthSheet from '../components/AuthSheet';
 
@@ -14,6 +15,7 @@ const ProfileScreen = () => {
   const { user, setUser } = useAuth();
   const { total } = useBasket();
   const { theme } = useTheme();
+  const { memory, analyzing, refreshMemory, clearMemory } = useMemory();
   const authSheetRef = useRef(null);
 
   const handleSignOut = async () => {
@@ -88,6 +90,98 @@ const ProfileScreen = () => {
             <Text style={styles.statValue}>0</Text>
             <Text style={styles.statLabel}>Saved</Text>
           </View>
+        </View>
+
+        {/* Shopping Profile (AI Memory) */}
+        <View style={styles.menuSection}>
+          <View style={styles.memoryHeader}>
+            <Text style={styles.sectionTitle}>Your Shopping Profile</Text>
+            <TouchableOpacity
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                refreshMemory();
+              }}
+              disabled={analyzing}
+            >
+              {analyzing ? (
+                <ActivityIndicator size="small" color="#d97655" />
+              ) : (
+                <Text style={styles.refreshText}>Refresh</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {memory?.preferences ? (
+            <View style={styles.memoryCard}>
+              <Text style={styles.memorySummary}>{memory.preferences.summary || memory.raw_summary}</Text>
+
+              {memory.preferences.favorite_categories?.length > 0 && (
+                <View style={styles.memoryRow}>
+                  <Text style={styles.memoryLabel}>Top Categories</Text>
+                  <View style={styles.tagRow}>
+                    {memory.preferences.favorite_categories.map((cat, i) => (
+                      <View key={i} style={styles.tag}>
+                        <Text style={styles.tagText}>{cat}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {memory.preferences.dietary_signals?.length > 0 && (
+                <View style={styles.memoryRow}>
+                  <Text style={styles.memoryLabel}>Dietary</Text>
+                  <View style={styles.tagRow}>
+                    {memory.preferences.dietary_signals.map((sig, i) => (
+                      <View key={i} style={[styles.tag, styles.tagGreen]}>
+                        <Text style={[styles.tagText, styles.tagTextGreen]}>{sig}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {memory.preferences.shopping_style && memory.preferences.shopping_style !== 'unknown' && (
+                <View style={styles.memoryRow}>
+                  <Text style={styles.memoryLabel}>Style</Text>
+                  <Text style={styles.memoryValue}>
+                    {memory.preferences.shopping_style.replace(/_/g, ' ')}
+                  </Text>
+                </View>
+              )}
+
+              {memory.preferences.flavor_profile?.length > 0 && (
+                <View style={styles.memoryRow}>
+                  <Text style={styles.memoryLabel}>Flavors</Text>
+                  <Text style={styles.memoryValue}>
+                    {memory.preferences.flavor_profile.join(', ')}
+                  </Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={styles.clearMemoryButton}
+                onPress={() => {
+                  Alert.alert(
+                    'Clear Shopping Profile',
+                    'This will delete your preference data and activity history. Are you sure?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Clear', style: 'destructive', onPress: clearMemory },
+                    ]
+                  );
+                }}
+              >
+                <Text style={styles.clearMemoryText}>Clear My Data</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.memoryCard}>
+              <Text style={styles.memoryEmpty}>
+                Keep shopping and we'll learn your preferences to personalize your experience.
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Account Menu */}
@@ -302,6 +396,88 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 8,
     overflow: 'hidden',
+  },
+  // Memory section
+  memoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  refreshText: {
+    fontSize: 13,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#d97655',
+  },
+  memoryCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e9e6dc',
+  },
+  memorySummary: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Regular',
+    color: '#333',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  memoryRow: {
+    marginBottom: 10,
+  },
+  memoryLabel: {
+    fontSize: 12,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#999',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  memoryValue: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#333',
+    textTransform: 'capitalize',
+  },
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  tag: {
+    backgroundColor: '#fef3ee',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  tagText: {
+    fontSize: 12,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#d97655',
+  },
+  tagGreen: {
+    backgroundColor: '#f0fdf4',
+  },
+  tagTextGreen: {
+    color: '#22c55e',
+  },
+  clearMemoryButton: {
+    marginTop: 12,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  clearMemoryText: {
+    fontSize: 12,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#999',
+  },
+  memoryEmpty: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Regular',
+    color: '#999',
+    textAlign: 'center',
+    paddingVertical: 12,
   },
   // Sign out
   signOutButton: {
