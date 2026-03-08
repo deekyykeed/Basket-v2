@@ -1,28 +1,65 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { supabase } from '../lib/supabase';
 import { CATEGORY_ICONS } from '../lib/icons';
 
-const CATEGORIES = [
-  { id: 'produce', name: 'Farm', icon: '🥕', slug: 'produce' },
-  { id: 'restaurants', name: 'Meals', icon: '🍴', slug: 'restaurants' },
-  { id: 'drinks', name: 'Drinks', icon: '🍷', slug: 'drinks' },
-  { id: 'snacks', name: 'Express', icon: '🥫', slug: 'snacks' },
-  { id: 'retail', name: 'Retail', icon: '🛍️', slug: 'retail' },
-];
-
 const CategoryFilter = ({ activeCategory, onCategoryPress }) => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching categories:', error.message);
+        setCategories([]);
+      } else {
+        setCategories(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePress = (categoryId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onCategoryPress(activeCategory === categoryId ? null : categoryId);
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="small" color="#999" />
+      </View>
+    );
+  }
+
+  if (categories.length === 0) return null;
+
   return (
-    <View style={styles.container}>
-      {CATEGORIES.map((category) => {
-        const IconComponent = CATEGORY_ICONS[category.icon];
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+      style={styles.scrollContainer}
+    >
+      {categories.map((category) => {
+        const IconComponent = category.icon ? CATEGORY_ICONS[category.icon] : null;
         const isActive = activeCategory === category.id;
-        
+
         return (
           <TouchableOpacity
             key={category.id}
@@ -51,15 +88,23 @@ const CategoryFilter = ({ activeCategory, onCategoryPress }) => {
           </TouchableOpacity>
         );
       })}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    width: '100%',
+  },
+  scrollContent: {
+    paddingHorizontal: 14,
+    gap: 16,
+  },
   container: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'center',
+    paddingVertical: 8,
   },
   categoryButton: {
     alignItems: 'center',

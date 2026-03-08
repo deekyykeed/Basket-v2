@@ -34,7 +34,7 @@ const HomeScreen = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, store:stores(name, slug)')
         .eq('is_available', true)
         .order('created_at', { ascending: false });
 

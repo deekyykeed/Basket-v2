@@ -81,6 +81,9 @@ const ProductCard = ({ product, onPress, onLongPress, basketQuantity = 0 }) => {
           </Text>
         )}
       </View>
+      {product.store?.name && (
+        <Text style={styles.storeName} numberOfLines={1}>{product.store.name}</Text>
+      )}
     </TouchableOpacity>
   );
 };
@@ -131,6 +134,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Fortnite',
     color: '#16a34a',
     textAlign: 'center',
+  },
+  storeName: {
+    fontSize: 11,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#999',
+    textAlign: 'center',
+    paddingHorizontal: 4,
+    marginTop: 2,
   },
   placeholderImage: {
     backgroundColor: '#f3f4f6',

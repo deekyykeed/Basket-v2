@@ -50,6 +50,10 @@ const ProductDetailsSheet = forwardRef(({ product, onAddToBasket, onClose }, ref
         <View style={styles.productInfo}>
           <Text style={styles.productName}>{product.name}</Text>
 
+          {product.store?.name && (
+            <Text style={styles.storeLabel}>by {product.store.name}</Text>
+          )}
+
           {product.quantity_label && (
             <Text style={styles.quantityLabel}>{product.quantity_label}</Text>
           )}
@@ -58,8 +62,10 @@ const ProductDetailsSheet = forwardRef(({ product, onAddToBasket, onClose }, ref
             ${parseFloat(product.price).toFixed(2)}
           </Text>
 
-          {product.description && (
-            <Text style={styles.productDescription}>{product.description}</Text>
+          {(product.ai_description || product.description) && (
+            <Text style={styles.productDescription}>
+              {product.ai_description || product.description}
+            </Text>
           )}
 
           {product.stock_quantity && (
@@ -138,6 +144,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'FamiljenGrotesk-Bold',
     color: '#000',
+    marginBottom: 8,
+  },
+  storeLabel: {
+    fontSize: 14,
+    fontFamily: 'FamiljenGrotesk-Medium',
+    color: '#d97655',
     marginBottom: 8,
   },
   quantityLabel: {
