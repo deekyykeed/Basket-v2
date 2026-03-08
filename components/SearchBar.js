@@ -1,15 +1,10 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import MicIcon from '../assets/icons/search/Mic-Line--Streamline-Mingcute.svg';
 import SearchIconSvg from '../assets/icons/search/Search-2-Fill--Streamline-Mingcute-Fill (1).svg';
+import { formatPrice } from '../lib/basketUtils';
 
-const SearchBar = ({ value, onChangeText, placeholder = "Search...", totalPrice = 0 }) => {
-  const formatPrice = (price) => {
-    if (price >= 1000) {
-      return (price / 1000).toFixed(1) + 'k';
-    }
-    return price.toFixed(1);
-  };
+const SearchBar = ({ value, onChangeText, placeholder = "Search...", totalPrice = 0, isAiSearch = false, aiSearchLoading = false }) => {
 
   return (
     <View style={styles.container}>
@@ -20,7 +15,7 @@ const SearchBar = ({ value, onChangeText, placeholder = "Search...", totalPrice 
         <TextInput
           style={styles.searchInput}
           placeholder={placeholder}
-          placeholderTextColor="hsl(0, 0.00%, 0.00%)"
+          placeholderTextColor="#999"
           value={value}
           onChangeText={onChangeText}
           autoCapitalize="none"
@@ -28,9 +23,19 @@ const SearchBar = ({ value, onChangeText, placeholder = "Search...", totalPrice 
           returnKeyType="search"
           numberOfLines={1}
         />
-        <TouchableOpacity style={styles.micButton}>
-          <MicIcon width={20} height={20} />
-        </TouchableOpacity>
+        {aiSearchLoading ? (
+          <View style={styles.micButton}>
+            <ActivityIndicator size="small" color="#d97655" />
+          </View>
+        ) : value ? (
+          <TouchableOpacity style={styles.micButton} onPress={() => onChangeText('')}>
+            <Text style={styles.clearText}>{isAiSearch ? 'AI' : 'Clear'}</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.micButton}>
+            <MicIcon width={20} height={20} />
+          </View>
+        )}
       </View>
       <TouchableOpacity style={styles.basketButton}>
         <Text style={styles.basketButtonText}>
@@ -87,6 +92,11 @@ const styles = StyleSheet.create({
     padding: 0,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  clearText: {
+    fontSize: 13,
+    fontFamily: 'FamiljenGrotesk-SemiBold',
+    color: '#999',
   },
   basketButton: {
     width: 40,

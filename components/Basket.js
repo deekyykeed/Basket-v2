@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   expandIconRotated: {
-    transform: [{ rotate: '45deg' }],
+    transform: [{ rotate: '180deg' }],
   },
   savedIndicator: {
     flexDirection: 'row',
